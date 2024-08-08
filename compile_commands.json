@@ -1,0 +1,267 @@
+[
+  {
+    "arguments": [
+      "/home/alexandre/testLang/nasm/os2/toolchain/i686-elf/bin/i686-elf-gcc",
+      "-std=c99",
+      "-g",
+      "-ffreestanding",
+      "-c",
+      "-o",
+      "/home/alexandre/testLang/nasm/os2/bin/stage2/c/ctype.obj",
+      "ctype.c"
+    ],
+    "directory": "/home/alexandre/testLang/nasm/os2/bootloader/stage2",
+    "file": "/home/alexandre/testLang/nasm/os2/bootloader/stage2/ctype.c",
+    "output": "/home/alexandre/testLang/nasm/os2/bin/stage2/c/ctype.obj"
+  },
+  {
+    "arguments": [
+      "/home/alexandre/testLang/nasm/os2/toolchain/i686-elf/bin/i686-elf-gcc",
+      "-std=c99",
+      "-g",
+      "-ffreestanding",
+      "-c",
+      "-o",
+      "/home/alexandre/testLang/nasm/os2/bin/stage2/c/disk.obj",
+      "disk.c"
+    ],
+    "directory": "/home/alexandre/testLang/nasm/os2/bootloader/stage2",
+    "file": "/home/alexandre/testLang/nasm/os2/bootloader/stage2/disk.c",
+    "output": "/home/alexandre/testLang/nasm/os2/bin/stage2/c/disk.obj"
+  },
+  {
+    "arguments": [
+      "/home/alexandre/testLang/nasm/os2/toolchain/i686-elf/bin/i686-elf-gcc",
+      "-std=c99",
+      "-g",
+      "-ffreestanding",
+      "-c",
+      "-o",
+      "/home/alexandre/testLang/nasm/os2/bin/stage2/c/fat.obj",
+      "fat.c"
+    ],
+    "directory": "/home/alexandre/testLang/nasm/os2/bootloader/stage2",
+    "file": "/home/alexandre/testLang/nasm/os2/bootloader/stage2/fat.c",
+    "output": "/home/alexandre/testLang/nasm/os2/bin/stage2/c/fat.obj"
+  },
+  {
+    "arguments": [
+      "/home/alexandre/testLang/nasm/os2/toolchain/i686-elf/bin/i686-elf-gcc",
+      "-std=c99",
+      "-g",
+      "-ffreestanding",
+      "-c",
+      "-o",
+      "/home/alexandre/testLang/nasm/os2/bin/stage2/c/main.obj",
+      "main.c"
+    ],
+    "directory": "/home/alexandre/testLang/nasm/os2/bootloader/stage2",
+    "file": "/home/alexandre/testLang/nasm/os2/bootloader/stage2/main.c",
+    "output": "/home/alexandre/testLang/nasm/os2/bin/stage2/c/main.obj"
+  },
+  {
+    "arguments": [
+      "/home/alexandre/testLang/nasm/os2/toolchain/i686-elf/bin/i686-elf-gcc",
+      "-std=c99",
+      "-g",
+      "-ffreestanding",
+      "-c",
+      "-o",
+      "/home/alexandre/testLang/nasm/os2/bin/stage2/c/memory.obj",
+      "memory.c"
+    ],
+    "directory": "/home/alexandre/testLang/nasm/os2/bootloader/stage2",
+    "file": "/home/alexandre/testLang/nasm/os2/bootloader/stage2/memory.c",
+    "output": "/home/alexandre/testLang/nasm/os2/bin/stage2/c/memory.obj"
+  },
+  {
+    "arguments": [
+      "/home/alexandre/testLang/nasm/os2/toolchain/i686-elf/bin/i686-elf-gcc",
+      "-std=c99",
+      "-g",
+      "-ffreestanding",
+      "-c",
+      "-o",
+      "/home/alexandre/testLang/nasm/os2/bin/stage2/c/stdio.obj",
+      "stdio.c"
+    ],
+    "directory": "/home/alexandre/testLang/nasm/os2/bootloader/stage2",
+    "file": "/home/alexandre/testLang/nasm/os2/bootloader/stage2/stdio.c",
+    "output": "/home/alexandre/testLang/nasm/os2/bin/stage2/c/stdio.obj"
+  },
+  {
+    "arguments": [
+      "/home/alexandre/testLang/nasm/os2/toolchain/i686-elf/bin/i686-elf-gcc",
+      "-std=c99",
+      "-g",
+      "-ffreestanding",
+      "-c",
+      "-o",
+      "/home/alexandre/testLang/nasm/os2/bin/stage2/c/string.obj",
+      "string.c"
+    ],
+    "directory": "/home/alexandre/testLang/nasm/os2/bootloader/stage2",
+    "file": "/home/alexandre/testLang/nasm/os2/bootloader/stage2/string.c",
+    "output": "/home/alexandre/testLang/nasm/os2/bin/stage2/c/string.obj"
+  },
+  {
+    "arguments": [
+      "/home/alexandre/testLang/nasm/os2/toolchain/i686-elf/bin/i686-elf-gcc",
+      "-std=c99",
+      "-g",
+      "-ffreestanding",
+      "-I./",
+      "-c",
+      "-o",
+      "/home/alexandre/testLang/nasm/os2/bin/kernel/c/main.o",
+      "main.c"
+    ],
+    "directory": "/home/alexandre/testLang/nasm/os2/kernel",
+    "file": "/home/alexandre/testLang/nasm/os2/kernel/main.c",
+    "output": "/home/alexandre/testLang/nasm/os2/bin/kernel/c/main.o"
+  },
+  {
+    "arguments": [
+      "/home/alexandre/testLang/nasm/os2/toolchain/i686-elf/bin/i686-elf-gcc",
+      "-std=c99",
+      "-g",
+      "-ffreestanding",
+      "-I./",
+      "-c",
+      "-o",
+      "/home/alexandre/testLang/nasm/os2/bin/kernel/c/memory.o",
+      "memory.c"
+    ],
+    "directory": "/home/alexandre/testLang/nasm/os2/kernel",
+    "file": "/home/alexandre/testLang/nasm/os2/kernel/memory.c",
+    "output": "/home/alexandre/testLang/nasm/os2/bin/kernel/c/memory.o"
+  },
+  {
+    "arguments": [
+      "/home/alexandre/testLang/nasm/os2/toolchain/i686-elf/bin/i686-elf-gcc",
+      "-std=c99",
+      "-g",
+      "-ffreestanding",
+      "-I./",
+      "-c",
+      "-o",
+      "/home/alexandre/testLang/nasm/os2/bin/kernel/c/stdio.o",
+      "stdio.c"
+    ],
+    "directory": "/home/alexandre/testLang/nasm/os2/kernel",
+    "file": "/home/alexandre/testLang/nasm/os2/kernel/stdio.c",
+    "output": "/home/alexandre/testLang/nasm/os2/bin/kernel/c/stdio.o"
+  },
+  {
+    "arguments": [
+      "/home/alexandre/testLang/nasm/os2/toolchain/i686-elf/bin/i686-elf-gcc",
+      "-std=c99",
+      "-g",
+      "-ffreestanding",
+      "-I./",
+      "-c",
+      "-o",
+      "/home/alexandre/testLang/nasm/os2/bin/kernel/c/hal/hal.o",
+      "hal/hal.c"
+    ],
+    "directory": "/home/alexandre/testLang/nasm/os2/kernel",
+    "file": "/home/alexandre/testLang/nasm/os2/kernel/hal/hal.c",
+    "output": "/home/alexandre/testLang/nasm/os2/bin/kernel/c/hal/hal.o"
+  },
+  {
+    "arguments": [
+      "/home/alexandre/testLang/nasm/os2/toolchain/i686-elf/bin/i686-elf-gcc",
+      "-std=c99",
+      "-g",
+      "-ffreestanding",
+      "-I./",
+      "-c",
+      "-o",
+      "/home/alexandre/testLang/nasm/os2/bin/kernel/c/arch/i686/gdt.o",
+      "arch/i686/gdt.c"
+    ],
+    "directory": "/home/alexandre/testLang/nasm/os2/kernel",
+    "file": "/home/alexandre/testLang/nasm/os2/kernel/arch/i686/gdt.c",
+    "output": "/home/alexandre/testLang/nasm/os2/bin/kernel/c/arch/i686/gdt.o"
+  },
+  {
+    "arguments": [
+      "/home/alexandre/testLang/nasm/os2/toolchain/i686-elf/bin/i686-elf-gcc",
+      "-std=c99",
+      "-g",
+      "-ffreestanding",
+      "-I./",
+      "-c",
+      "-o",
+      "/home/alexandre/testLang/nasm/os2/bin/kernel/c/arch/i686/idt.o",
+      "arch/i686/idt.c"
+    ],
+    "directory": "/home/alexandre/testLang/nasm/os2/kernel",
+    "file": "/home/alexandre/testLang/nasm/os2/kernel/arch/i686/idt.c",
+    "output": "/home/alexandre/testLang/nasm/os2/bin/kernel/c/arch/i686/idt.o"
+  },
+  {
+    "arguments": [
+      "/home/alexandre/testLang/nasm/os2/toolchain/i686-elf/bin/i686-elf-gcc",
+      "-std=c99",
+      "-g",
+      "-ffreestanding",
+      "-I./",
+      "-c",
+      "-o",
+      "/home/alexandre/testLang/nasm/os2/bin/kernel/c/arch/i686/irq.o",
+      "arch/i686/irq.c"
+    ],
+    "directory": "/home/alexandre/testLang/nasm/os2/kernel",
+    "file": "/home/alexandre/testLang/nasm/os2/kernel/arch/i686/irq.c",
+    "output": "/home/alexandre/testLang/nasm/os2/bin/kernel/c/arch/i686/irq.o"
+  },
+  {
+    "arguments": [
+      "/home/alexandre/testLang/nasm/os2/toolchain/i686-elf/bin/i686-elf-gcc",
+      "-std=c99",
+      "-g",
+      "-ffreestanding",
+      "-I./",
+      "-c",
+      "-o",
+      "/home/alexandre/testLang/nasm/os2/bin/kernel/c/arch/i686/isr.o",
+      "arch/i686/isr.c"
+    ],
+    "directory": "/home/alexandre/testLang/nasm/os2/kernel",
+    "file": "/home/alexandre/testLang/nasm/os2/kernel/arch/i686/isr.c",
+    "output": "/home/alexandre/testLang/nasm/os2/bin/kernel/c/arch/i686/isr.o"
+  },
+  {
+    "arguments": [
+      "/home/alexandre/testLang/nasm/os2/toolchain/i686-elf/bin/i686-elf-gcc",
+      "-std=c99",
+      "-g",
+      "-ffreestanding",
+      "-I./",
+      "-c",
+      "-o",
+      "/home/alexandre/testLang/nasm/os2/bin/kernel/c/arch/i686/isrs_gen.o",
+      "arch/i686/isrs_gen.c"
+    ],
+    "directory": "/home/alexandre/testLang/nasm/os2/kernel",
+    "file": "/home/alexandre/testLang/nasm/os2/kernel/arch/i686/isrs_gen.c",
+    "output": "/home/alexandre/testLang/nasm/os2/bin/kernel/c/arch/i686/isrs_gen.o"
+  },
+  {
+    "arguments": [
+      "/home/alexandre/testLang/nasm/os2/toolchain/i686-elf/bin/i686-elf-gcc",
+      "-std=c99",
+      "-g",
+      "-ffreestanding",
+      "-I./",
+      "-c",
+      "-o",
+      "/home/alexandre/testLang/nasm/os2/bin/kernel/c/arch/i686/pic.o",
+      "arch/i686/pic.c"
+    ],
+    "directory": "/home/alexandre/testLang/nasm/os2/kernel",
+    "file": "/home/alexandre/testLang/nasm/os2/kernel/arch/i686/pic.c",
+    "output": "/home/alexandre/testLang/nasm/os2/bin/kernel/c/arch/i686/pic.o"
+  }
+]
