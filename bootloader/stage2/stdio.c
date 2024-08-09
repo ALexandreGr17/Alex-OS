@@ -3,10 +3,6 @@
 
 #include <stdarg.h>
 #include <stdbool.h>
-#include <stdint.h>
-
-#define VGA_CRT_ADDRESS_PORT 0x3D4
-#define VGA_CRT_DATA_PORT 0x3D5
 
 const unsigned SCREEN_WIDTH = 80;
 const unsigned SCREEN_HEIGHT = 25;
@@ -39,10 +35,10 @@ void setcursor(int x, int y)
 {
     int pos = y * SCREEN_WIDTH + x;
 
-    x86_outb(VGA_CRT_ADDRESS_PORT, 0x0F);  // 0xf -> cursor location low
-    x86_outb(VGA_CRT_DATA_PORT, (uint8_t)(pos & 0xFF)); // first Byte of location
-    x86_outb(VGA_CRT_ADDRESS_PORT, 0x0E); // 0xe -> cursor location high
-    x86_outb(VGA_CRT_DATA_PORT, (uint8_t)((pos >> 8) & 0xFF)); // second Byte ogf location
+    x86_outb(0x3D4, 0x0F);
+    x86_outb(0x3D5, (uint8_t)(pos & 0xFF));
+    x86_outb(0x3D4, 0x0E);
+    x86_outb(0x3D5, (uint8_t)((pos >> 8) & 0xFF));
 }
 
 void clrscr()
@@ -80,6 +76,7 @@ void scrollback(int lines)
 
 void putc(char c)
 {
+    x86_outb(0xE9, c);
     switch (c)
     {
         case '\n':
@@ -97,42 +94,6 @@ void putc(char c)
             break;
 
         default:
-            putchr(g_ScreenX, g_ScreenY, c);
-            g_ScreenX++;
-            break;
-    }
-
-    if (g_ScreenX >= SCREEN_WIDTH)
-    {
-        g_ScreenY++;
-        g_ScreenX = 0;
-    }
-    if (g_ScreenY >= SCREEN_HEIGHT)
-        scrollback(1);
-
-    setcursor(g_ScreenX, g_ScreenY);
-}
-
-void putc_color(char c, char color)
-{
-    switch (c)
-    {
-        case '\n':
-            g_ScreenX = 0;
-            g_ScreenY++;
-            break;
-    
-        case '\t':
-            for (int i = 0; i < 4 - (g_ScreenX % 4); i++)
-                putc(' ');
-            break;
-
-        case '\r':
-            g_ScreenX = 0;
-            break;
-
-        default:
-            putcolor(g_ScreenX, g_ScreenY, color);
             putchr(g_ScreenX, g_ScreenY, c);
             g_ScreenX++;
             break;
@@ -155,12 +116,6 @@ void puts(const char* str)
     {
         putc(*str);
         str++;
-    }
-}
-
-void puts_color(const char* str, char color){
-    while (*str) {
-        putc(*str);
     }
 }
 
@@ -336,6 +291,7 @@ void printf(const char* fmt, ...)
                 length = PRINTF_LENGTH_DEFAULT;
                 radix = 10;
                 sign = false;
+                number = false;
                 break;
         }
 

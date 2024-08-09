@@ -313,3 +313,72 @@ x86_Disk_Read:
 	pop		ebp
 	ret
 
+
+; ##############################################################################
+; #																			   #
+; #					      x86_E820GetNextBlock								   #
+; #																			   #
+; ##############################################################################
+;	
+;	get the next memory region
+;
+;	args:
+;		1:	ptr to a memory block struct
+;		2:	ptr to the continuation id
+;	return:
+;		eax: size of struct on success and -1 on failure
+
+global x86_E820GetNextBlock
+x86_E820GetNextBlock:
+	push	ebp
+	mov		ebp, esp
+
+	x86_EnterRealMode
+
+	push	ebx
+	push	ecx
+	push	edx
+	push	esi
+	push	edi
+	push	ds
+	push	es
+
+	LinearToSegOffset [bp + 8], es, edi, di		; es:di ptr to structure
+	LinearToSegOffset [bp + 12], ds, esi, si	; ds:si ptr to continuationID
+
+	mov		ebx, ds:[si]
+
+	mov		eax, 0xE820							; eax function
+	mov		edx, E820Signature					
+	mov		ecx, 24								; size of structure
+
+	int		15h
+
+	cmp		eax, E820Signature
+	jne		.error
+	mov		eax, ecx							; return size
+	mov		ds:[si], ebx						; fill continuationID
+	jmp		.end
+
+.error:
+	mov		eax, -1
+
+.end:
+	pop		es
+	pop		ds
+	pop		edi
+	pop		esi
+	pop		edx
+	pop		ecx
+	pop		ebx
+
+	push	eax
+	x86_EnterProtectedMode
+	pop		eax
+
+	mov		esp, ebp
+	pop		ebp
+	ret
+
+
+E820Signature	equ 0x534D4150

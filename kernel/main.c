@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <arch/i686/isr.h>
+#include <boot/bootparams.h>
 #include <memory.h>
 #include <stdio.h>
 #include <hal/hal.h>
@@ -13,7 +14,7 @@ void timer(Register* regs){
 	//printf(".");
 }
 
-void __attribute__((section(".entry"))) start(uint16_t bootDrive){
+void __attribute__((section(".entry"))) start(boot_parameters_t* bootparams){
 	memset(&__bss_start, 0, (&__end) - (&__bss_start));
 	clrscr();
 	HAL_Initialaize();
@@ -25,6 +26,14 @@ void __attribute__((section(".entry"))) start(uint16_t bootDrive){
 	}
 
 	printf("Hello world from kernel\n");
+	printf("BootDevice: 0x%x\n", bootparams->BootDevice);
+	printf("Memory region count: %i\n", bootparams->Memory.region_count);
+	for(int i = 0; i < bootparams->Memory.region_count; i++){
+		printf("Start: 0x%llx, length: 0x%llx, type: 0x%x\n", 
+				bootparams->Memory.regions[i].Begin, 
+				bootparams->Memory.regions[i].Length,
+				bootparams->Memory.regions[i].Type);
+	}
 	//crash_me();
 	//
 	
