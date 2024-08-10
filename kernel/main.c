@@ -6,6 +6,8 @@
 #include <hal/hal.h>
 #include <arch/i686/irq.h>
 #include <arch/i686/keyboard.h>
+#include <arch/i686/pci.h>
+
 extern uint8_t __bss_start;
 extern uint8_t __end;
 void crash_me();
@@ -34,6 +36,8 @@ void __attribute__((section(".entry"))) start(boot_parameters_t* bootparams){
 				bootparams->Memory.regions[i].Length,
 				bootparams->Memory.regions[i].Type);
 	}
+
+	pci_scan();
 	//crash_me();
 	//
 	

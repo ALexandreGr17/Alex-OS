@@ -63,3 +63,4 @@ run: $(BUILD_DIR)/main_floppy.img
 
 debug:
 	bochs -f bochs_config
+
