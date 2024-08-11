@@ -1,5 +1,6 @@
 # Alex-OS
 Toy os in C and asm for x86, based on nanobytes-os project
+
 DONE:
 - [x] Bootloader avec FAT12 fs
 - [x] Jump to 32bit protected mode
