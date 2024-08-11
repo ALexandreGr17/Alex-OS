@@ -1,5 +1,13 @@
 # Alex-OS
 Toy os in C and asm for x86, based on nanobytes-os project
+DONE:
+- [x] Bootloader avec FAT12 fs
+- [x] Jump to 32bit protected mode
+- [x] Commencer le Kernel
+- [x] basic Interrupt
+- [x] keyboard (basic)
+- [x] Memory map (basic)
+- [x] PCI (basic)
 
 TODO:
 - [ ] Nouveau Bootloader sans FS
@@ -8,6 +16,7 @@ TODO:
 - [ ] shell
 - [ ] text editor
 - [ ] c compiler
+- [ ] PCI memory mode
 - [ ] network basic (TCP/USP/ICMP network stack)
 - [ ] network manager
 - [ ] user system
