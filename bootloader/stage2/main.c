@@ -5,6 +5,7 @@
 #include "stdio.h"
 #include "disk.h"
 #include "memdetect.h"
+#include "memory.h"
 
 uint8_t* KernelLoadBuffer = (uint8_t*)MEMORY_LOAD_KERNEL;
 uint8_t* kernel = (uint8_t*)MEMORY_KERNEL_ADDR;

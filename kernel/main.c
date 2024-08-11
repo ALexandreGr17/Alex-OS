@@ -6,7 +6,8 @@
 #include <hal/hal.h>
 #include <arch/i686/irq.h>
 #include <arch/i686/keyboard.h>
-#include <arch/i686/pci.h>
+#include <arch/i686/pci/pci.h>
+#include <arch/i686/ata.h>
 
 extern uint8_t __bss_start;
 extern uint8_t __end;
@@ -37,9 +38,35 @@ void __attribute__((section(".entry"))) start(boot_parameters_t* bootparams){
 				bootparams->Memory.regions[i].Type);
 	}
 
-	pci_scan();
+	
+
+	print_all_pci_devices();
+	uint16_t pci_ds[2048];
+	uint16_t nb_found = pci_get_device_by_class(0x3, pci_ds);
+	if(nb_found == 0){
+		printf("NO DISK\n");
+		goto end;
+	}
+	
+	uint16_t size;
+	pci_bar_t* bars = pci_get_port_info(pci_ds[0], &size);
+	for(int i = 0; i < size; i++){
+		printf("DISK: port: 0x%x, type: 0x%x\n", bars[i].addr._16, bars[i].type);
+	}
+
 	//crash_me();
-	//
+	/*
+	printf("\n\n");
+	disk_ata_t atam0 = {.base_port = 0x1F0, .master = 1};
+	ata_init(&atam0, 1);
+	identify(&atam0);
+
+	char* buffer = "Hello world";
+	ata_write28(&atam0, 0, buffer, 11);
+	ata_flush(&atam0);
+	char buffer_read[12] = {0};
+	ata_read28(&atam0, 0, buffer_read, 11);
+	printf("\n%s\n", buffer_read);*/
 	
 end:
 	for(;;);
