@@ -14,7 +14,7 @@ TODO:
 - [ ] Nouveau Bootloader sans FS
 - [ ] EXT2 support
 - [ ] FAT32/12/16 support
-- [ ] shell
+- [ ] shell/Terminal
 - [ ] text editor
 - [ ] c compiler
 - [ ] PCI memory mode
