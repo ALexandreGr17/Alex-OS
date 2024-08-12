@@ -9,9 +9,10 @@ DONE:
 - [x] keyboard (basic)
 - [x] Memory map (basic)
 - [x] PCI (basic)
+- [x] Nouveau Bootloader sans FS
 
 TODO:
-- [ ] Nouveau Bootloader sans FS
+- [ ] Disk image
 - [ ] EXT2 support
 - [ ] FAT32/12/16 support
 - [ ] shell/Terminal

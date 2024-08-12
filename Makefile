@@ -1,5 +1,5 @@
 AS=nasm
-BUILD_DIR = bin
+SHELL=/bin/bash
 
 include ./build_script/config.mk
 
@@ -12,15 +12,21 @@ include ./build_script/toolchain.mk
 #
 # Floppy Image
 #
-#
+
 floppy_image: $(BUILD_DIR)/main_floppy.img
 
 $(BUILD_DIR)/main_floppy.img: bootloader kernel
-	dd if=/dev/zero of=$@ bs=512 count=2880
-	mkfs.fat -F 12 -n "ALEXOS" $@
-	dd if=$(BUILD_DIR)/boot.bin of=$@ conv=notrunc
-	mcopy -i $@ $(BUILD_DIR)/stage2.bin "::stage2.bin"
-	mcopy -i $@ $(BUILD_DIR)/kernel.bin "::kernel.bin"
+	@./build_script/make_floppy_img.sh $@
+
+#
+# Disk Image
+#
+
+disk_image: $(BUILD_DIR)/main_disk.raw
+
+$(BUILD_DIR)/main_disk.raw: bootloader kernel
+	@./build_script/make_disk_img.sh $@ $(MAKE_DISK_SIZE)
+
 
 #
 # Bootloader

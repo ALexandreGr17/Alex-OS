@@ -1,3 +1,5 @@
+export MAKE_DISK_SIZE = 16777216 # 16 MB
+
 export CFLAGS = -std=c99 -g
 export ASMFLAGS =
 export CC = gcc
@@ -16,6 +18,8 @@ export TARGET_CXX = $(TARGET)-g++
 export TARGET_LD = $(TARGET)-gcc
 export TARGET_LINKFLAGS =
 export TARGET_LIBS =
+
+export BUILD_DIR = $(abspath ./bin)
 
 BINUTILS_VERSION = 2.37
 BINUTILS_URL = https://ftp.gnu.org/gnu/binutils/binutils-$(BINUTILS_VERSION).tar.xz
