@@ -16,7 +16,7 @@ void i686_IRQ_Handler(Register* regs){
 	uint8_t pic_irr	= i686_PIC_ReadIRQRequestRegister();
 
 	if(!g_IRQHandler[irq]){
-		printf("Unhandled IRQ %d ISR=0x%x IRR=0x%x \n", irq, pic_isr, pic_irr);
+	//	printf("Unhandled IRQ %d ISR=0x%x IRR=0x%x \n", irq, pic_isr, pic_irr);
 	}
 	else {
 		g_IRQHandler[irq](regs);
@@ -34,5 +34,6 @@ void i686_IRQ_Initialize(){
 }
 
 void i686_IRQ_RegisterHandler(int irq, IRQHandler handler){
+	//printf("Registering IRQ%d\n", irq);
 	g_IRQHandler[irq] = handler;
 }

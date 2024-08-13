@@ -1,3 +1,4 @@
+#include "arch/i686/fdc.h"
 #include <stdint.h>
 #include <arch/i686/isr.h>
 #include <boot/bootparams.h>
@@ -23,7 +24,7 @@ void __attribute__((section(".entry"))) start(boot_parameters_t* bootparams){
 	HAL_Initialaize();
 
 	for(int i = 0; i < 16; i++){
-		if(i != 1){
+		if(i != 1 && i != 6){
 			i686_IRQ_RegisterHandler(i, timer);
 		}
 	}

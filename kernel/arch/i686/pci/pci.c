@@ -140,7 +140,7 @@ void get_bar(uint8_t bus, uint8_t slot, uint8_t func, uint8_t header_type, hardw
 }
 
 void pci_scan(){
-	printf("\nPCI device:\n", PCI_COMMAND_PORT);
+	//printf("\nPCI device:\n", PCI_COMMAND_PORT);
 
 	for(int bus = 0; bus < 8; bus++){
 		for(int device = 0; device < 32; device++){

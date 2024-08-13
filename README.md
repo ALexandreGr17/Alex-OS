@@ -13,8 +13,8 @@ DONE:
 
 TODO:
 - [ ] Disk image
-- [ ] EXT2 support
 - [ ] FAT32/12/16 support
+- [ ] EXT2 support
 - [ ] shell/Terminal
 - [ ] text editor
 - [ ] c compiler
