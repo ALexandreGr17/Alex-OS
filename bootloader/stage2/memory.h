@@ -6,4 +6,5 @@ void* memcpy(void* dst, const void* src, uint16_t n);
 void* memset(void* ptr, int value, uint16_t n);
 int memcmp(const void* ptr1, const void* prt2, uint16_t n);
 
+void* segoff_to_linear(void* addr);
 #endif

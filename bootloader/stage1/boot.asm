@@ -30,7 +30,17 @@ ebpb_volume_sn:				dd	0x31, 0x32, 0x33, 0x34
 ebpb_label:					db  "ALEXOS     " ; 11 bytes
 ebpb_filesystem_type:		db	"FAT12   "	  ; 8 bytes
 
+times 90-($-$$) db 0
+
 start:
+	; mov partition entry from MBR to somewhere else
+	mov		ax, PARTITION_ENTRY_SEG
+	mov		es, ax
+	mov		di, PARTITION_ENTRY_OFF
+	
+	mov		cx, 16
+	rep		movsb
+
 	mov		ax, 0
 	mov		ds, ax
 	mov		es, ax
@@ -45,6 +55,9 @@ start:
 	retf
 
 .after:
+	; BIOS should set DL to drive number
+	mov		[ebpb_drive_number], dl
+	
 	; read something from floppy disk
 	; checking if extension is present
 	stc
@@ -55,10 +68,7 @@ start:
 	mov		BYTE [extension], 1
 .no_extension:
 
-    ; BIOS should set DL to drive number
-	mov		[ebpb_drive_number], dl
-
-	mov		bx, STAGE2_LOAD_SEGMENT
+    mov		bx, STAGE2_LOAD_SEGMENT
 	mov		es, bx
 	mov		bx, STAGE2_LOAD_OFFSET
 
@@ -83,10 +93,16 @@ start:
 
 .end_loop:
 	mov		dl, [ebpb_drive_number]
+	mov		si, PARTITION_ENTRY_OFF
+	mov		di, PARTITION_ENTRY_SEG
+
 	mov		ax, STAGE2_LOAD_SEGMENT
 	mov		ds, ax
 	mov		es, ax
 	; es:bx -> 0x500000
+
+	;mov		si, msg
+	;call	puts
 
 	jmp		STAGE2_LOAD_SEGMENT:STAGE2_LOAD_OFFSET
 
@@ -217,6 +233,7 @@ disk_read:
 	push	bx
 	push	cx
 	push	dx
+	push	si
 	push	di
 
 	; checking if disk support extension
@@ -253,10 +270,11 @@ disk_read:
 .done:
 	popa
 	pop		di
+	pop		si
 	pop		dx
 	pop		cx
 	pop		bx
-	pop		ax
+	pop		eax
 	ret
 
 ;
@@ -275,11 +293,13 @@ extension:		db 0
 dap:
 	.size:			db 0x10
 					db 0
-	.sector_count:	dw 0x00, 0x00
-	.segment:		dw 0x0000
+	.sector_count:	db 0x00, 0x00
 	.offset:		dw 0x0000
+	.segment:		dw 0x0000
 	.lba:			dq 0
 
+PARTITION_ENTRY_SEG	equ 0x2000
+PARTITION_ENTRY_OFF	equ 0x0
 
 times 480-($-$$) db 0x0				 ; making sur that the addr of stage2 is a the end of the file (480 = 512 - 32)
 stage2_pos		times	30	db 0x00

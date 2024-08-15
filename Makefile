@@ -64,9 +64,22 @@ clean:
 	#$(MAKE) -C ./kernel BUILD_DIR=$(abspath $(BUILD_DIR)) clean
 	$(RM) -rf $(BUILD_DIR)
 
+run_disk: $(BUILD_DIR)/main_disk.raw
+	qemu-system-x86_64 -hda $<
+
 run: $(BUILD_DIR)/main_floppy.img
 	qemu-system-x86_64 -fda $< -hda ./disk_image_master.img
 
 debug:
 	bochs -f bochs_config
 
+debug_disk: $(BUILD_DIR)/main_disk.raw
+	#bochs -f ./bochs_config_disk
+	qemu-system-i386 -hda $< -S -s &
+	gdb -nx -ix ./gdb_init_real_mode.txt \
+		-ex "target remote localhost:1234"\
+		-ex "break *0x7c00" \
+		-ex "continue"
+	#gdb -nx -x debug_script.gdb \
+	#	-ex "break *0x7c00"				\
+	#	-ex "continue"

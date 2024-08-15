@@ -74,6 +74,12 @@ void scrollback(int lines)
     g_ScreenY -= lines;
 }
 
+
+void putc_color(char c, char color){
+    putcolor(g_ScreenX, g_ScreenY, color);
+    putc(c);
+}
+
 void putc(char c)
 {
     x86_outb(0xE9, c);
@@ -108,6 +114,14 @@ void putc(char c)
         scrollback(1);
 
     setcursor(g_ScreenX, g_ScreenY);
+}
+
+
+void puts_color(const char* str, char color){
+    while (*str) {
+        putc_color(*str, color);
+        str++;
+    }
 }
 
 void puts(const char* str)

@@ -12,6 +12,8 @@ entry:
 
 	; save boot drive
 	mov		[g_BootDrive], dl
+	mov		[g_partition_off], si
+	mov		[g_partition_seg], di
 	; set the stack
 	mov		ax, ds
 	mov		ss, ax
@@ -53,9 +55,15 @@ entry:
 	cld		; clean direction flag
 
 	xor		edx, edx
+	; calculating linear address of partition
+	mov		dx, [g_partition_seg]
+	shl		edx, 16
+	mov		dx, [g_partition_off]
+
+	push	edx
 	mov		dl, [g_BootDrive]
 	push	edx
-
+	
 	call	cstart
 
 	cli
@@ -175,3 +183,5 @@ g_GDTDesc:	dw	g_GDTDesc - g_GDT - 1	; limit = sizeof GDT - 1
 
 
 g_BootDrive: db 0
+g_partition_seg: dw 0
+g_partition_off: dw 0

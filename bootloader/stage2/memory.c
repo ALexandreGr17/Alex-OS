@@ -23,3 +23,9 @@ int memcmp(const void *ptr1, const void *prt2, uint16_t n){
 	}
 	return 0;
 }
+
+void* segoff_to_linear(void* addr){
+	uint32_t off = (uint32_t)(addr) & 0xFFFF;
+	uint32_t seg = (uint32_t)(addr) >> 16;
+	return (void*)(seg * 16 + off);
+}
