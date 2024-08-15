@@ -16,7 +16,7 @@ include ./build_script/toolchain.mk
 floppy_image: $(BUILD_DIR)/main_floppy.img
 
 $(BUILD_DIR)/main_floppy.img: bootloader kernel
-	@./build_script/make_floppy_img.sh $@
+	@./build_script/make_floppy_img.sh $@ $(FILESYSTEM)
 
 #
 # Disk Image
@@ -25,7 +25,7 @@ $(BUILD_DIR)/main_floppy.img: bootloader kernel
 disk_image: $(BUILD_DIR)/main_disk.raw
 
 $(BUILD_DIR)/main_disk.raw: bootloader kernel
-	@./build_script/make_disk_img.sh $@ $(MAKE_DISK_SIZE)
+	@./build_script/make_disk_img.sh $@ $(MAKE_DISK_SIZE) $(FILESYSTEM)
 
 
 #

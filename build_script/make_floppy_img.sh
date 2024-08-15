@@ -2,6 +2,11 @@
 
 TARGET=$1
 
+if [ "$2" != "1" ]; then 
+	echo "Unsuported file system"
+	exit 2
+fi
+
 STAGE1_STAGE2_LOCATION_OFFSET=480
 
 # generate image file

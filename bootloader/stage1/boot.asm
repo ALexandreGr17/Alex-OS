@@ -2,6 +2,11 @@ org 0x7C00
 bits 16
 
 %define	ENDL 0x0D, 0x0A
+
+%define FAT12 1
+%define FAT16 2
+%define FAT32 3
+
 ; ##############################################################################
 ; #																			   #
 ; #							FAT12 Header									   #
@@ -9,28 +14,42 @@ bits 16
 ; ##############################################################################
 jmp short start
 nop
-bpb_oem:					db	"MSWIN4.1" ; 8 BITS
-bpb_bytes_per_sector:		dw	512
-bpb_sectors_per_cluster:	db	1
-bpb_reseved_sector_count:	dw	1
-bpb_fat_count:				db	2
-bpb_root_dir_entry_count:	dw	0xE0
-bpb_total_sector:			dw	2880		; define in makefile dd comand
-bpb_media_descriptor:		db	0xF0		; floppy disk 3.5"
-bpb_sectors_per_fat:		dw	9			; 
-bpb_sectors_per_track:		dw  18
-bpb_head_count:				dw	2
-bpb_hidden_sectors:			dd  0
-bpb_large_sector_count:		dd  0
+%if (FILESYSTEM == FAT12) || (FILESYSTEM == FAT16) || (FILESYSTEM == FAT32)
+	bpb_oem:					db	"MSWIN4.1" ; 8 BITS
+	bpb_bytes_per_sector:		dw	512
+	bpb_sectors_per_cluster:	db	1
+	bpb_reseved_sector_count:	dw	1
+	bpb_fat_count:				db	2
+	bpb_root_dir_entry_count:	dw	0xE0
+	bpb_total_sector:			dw	2880		; define in makefile dd comand
+	bpb_media_descriptor:		db	0xF0		; floppy disk 3.5"
+	bpb_sectors_per_fat:		dw	9			; 
+	bpb_sectors_per_track:		dw  18
+	bpb_head_count:				dw	2
+	bpb_hidden_sectors:			dd  0
+	bpb_large_sector_count:		dd  0
 
-ebpb_drive_number:			db	0x0			; useless paramter but 0 -> floppy 0x80 -> hdd
-ebpb_flags:					db  0x0
-ebpb_signature:				db	0x29
-ebpb_volume_sn:				dd	0x31, 0x32, 0x33, 0x34
-ebpb_label:					db  "ALEXOS     " ; 11 bytes
-ebpb_filesystem_type:		db	"FAT12   "	  ; 8 bytes
+	%if (FILESYSTEM == FAT32)
+		ebpb_fat32_sector_per_fat		dd 0
+		epbp_fat32_flags				dw 0
+		epbp_fat32_fat_version_number	dw 0
+		epbp_fat32_root_dir_cluster		dd 0
+		epbp_fat32_fsinfo_sector		dw 0
+		epbp_fat32_backup_boot_sector	dw 0
+		epbp_fat32_reserved				times 12 db 0
+	%endif
 
-times 90-($-$$) db 0
+	ebpb_drive_number:			db	0x0			; useless paramter but 0 -> floppy 0x80 -> hdd
+	ebpb_flags:					db  0x0
+	ebpb_signature:				db	0x29
+	ebpb_volume_sn:				dd	0x31, 0x32, 0x33, 0x34
+	ebpb_label:					db  "ALEXOS     " ; 11 bytes
+	ebpb_filesystem_type:		db	"FAT12   "	  ; 8 bytes
+%endif
+
+%if FILESYSTEM == FAT12 || FILESYSTEM == FAT16
+	times 90-($-$$) db 0
+%endif
 
 start:
 	; mov partition entry from MBR to somewhere else

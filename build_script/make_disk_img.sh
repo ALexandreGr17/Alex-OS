@@ -4,6 +4,7 @@ set -e
 
 TARGET=$1
 SIZE=$2
+FS_STR=$3
 
 STAGE1_STAGE2_LOCATION_OFFSET=480
 
@@ -40,8 +41,20 @@ echo "Created loopback device ${DEVICE}"
 TARGET_PARTITION="${DEVICE}p1"
 
 # create file system
+
+if [ "$FS_STR" == "1" ]; then 
+    FS=12
+elif [ "$FS_STR" == "2" ]; then
+    FS=16
+elif [ "$FS_STR" == "3" ]; then
+    FS=32
+else
+    echo "Unsuported File system"
+    exit 2
+fi
+
 echo "Formatting ${TARGET_PARTITION}..."
-sudo mkfs.fat -F 12 -n "ALEXOS" $TARGET_PARTITION >/dev/null
+sudo mkfs.fat -F $FS -n "ALEXOS" $TARGET_PARTITION >/dev/null
 
 # install bootloader
 echo "Installing bootloader on ${TARGET_PARTITION}..."

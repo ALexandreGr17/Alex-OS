@@ -11,11 +11,12 @@ DONE:
 - [x] PCI (basic)
 - [x] Nouveau Bootloader sans FS
 - [X] Disk image
-- [x] support FAT12
+- [x] support FAT12 (Bootloader)
+- [x] FAT32/16 support (Bootloader)
 
 TODO:
-- [ ] FAT32/16 support
 - [ ] Memory Management
+- [ ] FAT32/16/12 support (Kernel)
 - [ ] PCI memory mode
 - [ ] EXT2 support
 - [ ] shell/Terminal
