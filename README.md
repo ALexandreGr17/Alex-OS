@@ -12,6 +12,7 @@ DONE:
 - [x] Nouveau Bootloader sans FS
 - [X] Disk image
 - [x] support FAT12
+
 TODO:
 - [ ] FAT32/16 support
 - [ ] Memory Management
