@@ -10,15 +10,16 @@ DONE:
 - [x] Memory map (basic)
 - [x] PCI (basic)
 - [x] Nouveau Bootloader sans FS
-
+- [X] Disk image
+- [x] support FAT12
 TODO:
-- [ ] Disk image
-- [ ] FAT32/12/16 support
+- [ ] FAT32/16 support
+- [ ] Memory Management
+- [ ] PCI memory mode
 - [ ] EXT2 support
 - [ ] shell/Terminal
 - [ ] text editor
 - [ ] c compiler
-- [ ] PCI memory mode
 - [ ] network basic (TCP/USP/ICMP network stack)
 - [ ] network manager
 - [ ] user system
