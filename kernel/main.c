@@ -9,6 +9,7 @@
 #include <arch/i686/keyboard.h>
 #include <arch/i686/pci/pci.h>
 #include <arch/i686/ata.h>
+#include <mem_management.h>
 
 extern uint8_t __bss_start;
 extern uint8_t __end;
@@ -21,8 +22,10 @@ void timer(Register* regs){
 void __attribute__((section(".entry"))) start(boot_parameters_t* bootparams){
 	memset(&__bss_start, 0, (&__end) - (&__bss_start));
 	clrscr();
-	HAL_Initialaize();
 
+	init_memory_management(&bootparams->Memory);
+	HAL_Initialaize();
+	
 	for(int i = 0; i < 16; i++){
 		if(i != 1 && i != 6){
 			i686_IRQ_RegisterHandler(i, timer);
@@ -48,12 +51,13 @@ void __attribute__((section(".entry"))) start(boot_parameters_t* bootparams){
 		printf("NO DISK\n");
 		goto end;
 	}
-	
+	/*
 	uint16_t size;
 	pci_bar_t* bars = pci_get_port_info(pci_ds[0], &size);
 	for(int i = 0; i < size; i++){
 		printf("DISK: port: 0x%x, type: 0x%x\n", bars[i].addr._16, bars[i].type);
-	}
+	}*/
+
 
 	//crash_me();
 	/*

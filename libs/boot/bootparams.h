@@ -20,4 +20,12 @@ typedef struct {
 	uint8_t BootDevice;
 } boot_parameters_t;
 
+typedef enum {
+	MEMORY_TYPE_USABLE = 1,
+	MEMORY_TYPE_RESERVED = 2,
+	MEMORY_TYPE_ACPI_RECLAIM = 3,
+	MEMORY_TYPE_ACPI_NVS = 4,
+	MEMORY_TYPE_BAS_MEMORY = 5,
+} MEMORY_TYPE;
+
 #endif

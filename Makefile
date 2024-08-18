@@ -65,10 +65,10 @@ clean:
 	$(RM) -rf $(BUILD_DIR)
 
 run_disk: $(BUILD_DIR)/main_disk.raw
-	qemu-system-x86_64 -hda $<
+	qemu-system-x86_64 -debugcon stdio -hda $<
 
 run: $(BUILD_DIR)/main_floppy.img
-	qemu-system-x86_64 -fda $< -hda ./disk_image_master.img
+	qemu-system-x86_64 -debugcon stdio -fda $< -hda ./disk_image_master.img
 
 debug:
 	bochs -f bochs_config
