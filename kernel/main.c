@@ -51,6 +51,7 @@ void __attribute__((section(".entry"))) start(boot_parameters_t* bootparams){
 		printf("NO DISK\n");
 		goto end;
 	}
+
 	/*
 	uint16_t size;
 	pci_bar_t* bars = pci_get_port_info(pci_ds[0], &size);

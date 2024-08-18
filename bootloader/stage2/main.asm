@@ -60,7 +60,6 @@ entry:
 	shl		edx, 16
 	mov		dx, [g_partition_off]
 
-	push	esp
 	push	edx
 	mov		dl, [g_BootDrive]
 	push	edx

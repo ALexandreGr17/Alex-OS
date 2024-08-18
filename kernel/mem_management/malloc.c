@@ -18,8 +18,6 @@ uint64_t align(uint64_t size){
 memory_header_t* expand(uint64_t size){
 	heap_t* heap = get_heap();
 	void* next_addr = heap->block_strart + heap->used_size;
-	printf("\n----------------------\n 0x%lx, 0x%x", heap->last_header, heap->last_header->size);
-	printf("\n-----------------\n0x%lx, 0x%x",next_addr, heap->last_header + heap->last_header->size);
 	if(heap->last_header == NULL){
 		next_addr = heap->block_strart + heap->used_size;
 	}
@@ -27,12 +25,10 @@ memory_header_t* expand(uint64_t size){
 		return NULL;
 	}
 	heap->used_size += size + sizeof(memory_header_t);
-	printf("herer\n");
 	memory_header_t* mem_header = next_addr;
 	mem_header->prev = heap->last_header;
 	heap->last_header->next = mem_header;
 	heap->last_header = mem_header;
-	//printf("herer\n");
 	if(heap->first_header == NULL){
 		heap->first_header = mem_header;
 	}
