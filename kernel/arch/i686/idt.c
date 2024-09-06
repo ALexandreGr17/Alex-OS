@@ -2,6 +2,7 @@
 #include "gdt.h"
 #include "idt.h"
 #include "../../util/binary.h"
+#include <stdio.h>
 
 typedef struct {
 	uint16_t	base_low;

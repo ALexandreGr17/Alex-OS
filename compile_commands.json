@@ -72,6 +72,22 @@
       "-I./../../libs",
       "-c",
       "-o",
+      "/home/alexandre/projet/Alex-OS/bin/stage2/c/mbr.obj",
+      "mbr.c"
+    ],
+    "directory": "/home/alexandre/projet/Alex-OS/bootloader/stage2",
+    "file": "/home/alexandre/projet/Alex-OS/bootloader/stage2/mbr.c",
+    "output": "/home/alexandre/projet/Alex-OS/bin/stage2/c/mbr.obj"
+  },
+  {
+    "arguments": [
+      "/home/alexandre/projet/Alex-OS/toolchain/i686-elf/bin/i686-elf-gcc",
+      "-std=c99",
+      "-g",
+      "-ffreestanding",
+      "-I./../../libs",
+      "-c",
+      "-o",
       "/home/alexandre/projet/Alex-OS/bin/stage2/c/memdetect.obj",
       "memdetect.c"
     ],
@@ -143,5 +159,294 @@
     "directory": "/home/alexandre/projet/Alex-OS/kernel",
     "file": "/home/alexandre/projet/Alex-OS/kernel/main.c",
     "output": "/home/alexandre/projet/Alex-OS/bin/kernel/c/main.o"
+  },
+  {
+    "arguments": [
+      "/home/alexandre/projet/Alex-OS/toolchain/i686-elf/bin/i686-elf-gcc",
+      "-std=c99",
+      "-g",
+      "-ffreestanding",
+      "-I./",
+      "-I./../libs/",
+      "-c",
+      "-o",
+      "/home/alexandre/projet/Alex-OS/bin/kernel/c/stdio.o",
+      "stdio.c"
+    ],
+    "directory": "/home/alexandre/projet/Alex-OS/kernel",
+    "file": "/home/alexandre/projet/Alex-OS/kernel/stdio.c",
+    "output": "/home/alexandre/projet/Alex-OS/bin/kernel/c/stdio.o"
+  },
+  {
+    "arguments": [
+      "/home/alexandre/projet/Alex-OS/toolchain/i686-elf/bin/i686-elf-gcc",
+      "-std=c99",
+      "-g",
+      "-ffreestanding",
+      "-I./",
+      "-I./../libs/",
+      "-c",
+      "-o",
+      "/home/alexandre/projet/Alex-OS/bin/kernel/c/filesystem/fat.o",
+      "filesystem/fat.c"
+    ],
+    "directory": "/home/alexandre/projet/Alex-OS/kernel",
+    "file": "/home/alexandre/projet/Alex-OS/kernel/filesystem/fat.c",
+    "output": "/home/alexandre/projet/Alex-OS/bin/kernel/c/filesystem/fat.o"
+  },
+  {
+    "arguments": [
+      "/home/alexandre/projet/Alex-OS/toolchain/i686-elf/bin/i686-elf-gcc",
+      "-std=c99",
+      "-g",
+      "-ffreestanding",
+      "-I./",
+      "-I./../libs/",
+      "-c",
+      "-o",
+      "/home/alexandre/projet/Alex-OS/bin/kernel/c/hal/hal.o",
+      "hal/hal.c"
+    ],
+    "directory": "/home/alexandre/projet/Alex-OS/kernel",
+    "file": "/home/alexandre/projet/Alex-OS/kernel/hal/hal.c",
+    "output": "/home/alexandre/projet/Alex-OS/bin/kernel/c/hal/hal.o"
+  },
+  {
+    "arguments": [
+      "/home/alexandre/projet/Alex-OS/toolchain/i686-elf/bin/i686-elf-gcc",
+      "-std=c99",
+      "-g",
+      "-ffreestanding",
+      "-I./",
+      "-I./../libs/",
+      "-c",
+      "-o",
+      "/home/alexandre/projet/Alex-OS/bin/kernel/c/mem_management/heap.o",
+      "mem_management/heap.c"
+    ],
+    "directory": "/home/alexandre/projet/Alex-OS/kernel",
+    "file": "/home/alexandre/projet/Alex-OS/kernel/mem_management/heap.c",
+    "output": "/home/alexandre/projet/Alex-OS/bin/kernel/c/mem_management/heap.o"
+  },
+  {
+    "arguments": [
+      "/home/alexandre/projet/Alex-OS/toolchain/i686-elf/bin/i686-elf-gcc",
+      "-std=c99",
+      "-g",
+      "-ffreestanding",
+      "-I./",
+      "-I./../libs/",
+      "-c",
+      "-o",
+      "/home/alexandre/projet/Alex-OS/bin/kernel/c/mem_management/malloc.o",
+      "mem_management/malloc.c"
+    ],
+    "directory": "/home/alexandre/projet/Alex-OS/kernel",
+    "file": "/home/alexandre/projet/Alex-OS/kernel/mem_management/malloc.c",
+    "output": "/home/alexandre/projet/Alex-OS/bin/kernel/c/mem_management/malloc.o"
+  },
+  {
+    "arguments": [
+      "/home/alexandre/projet/Alex-OS/toolchain/i686-elf/bin/i686-elf-gcc",
+      "-std=c99",
+      "-g",
+      "-ffreestanding",
+      "-I./",
+      "-I./../libs/",
+      "-c",
+      "-o",
+      "/home/alexandre/projet/Alex-OS/bin/kernel/c/memory/memory.o",
+      "memory/memory.c"
+    ],
+    "directory": "/home/alexandre/projet/Alex-OS/kernel",
+    "file": "/home/alexandre/projet/Alex-OS/kernel/memory/memory.c",
+    "output": "/home/alexandre/projet/Alex-OS/bin/kernel/c/memory/memory.o"
+  },
+  {
+    "arguments": [
+      "/home/alexandre/projet/Alex-OS/toolchain/i686-elf/bin/i686-elf-gcc",
+      "-std=c99",
+      "-g",
+      "-ffreestanding",
+      "-I./",
+      "-I./../libs/",
+      "-c",
+      "-o",
+      "/home/alexandre/projet/Alex-OS/bin/kernel/c/string/string.o",
+      "string/string.c"
+    ],
+    "directory": "/home/alexandre/projet/Alex-OS/kernel",
+    "file": "/home/alexandre/projet/Alex-OS/kernel/string/string.c",
+    "output": "/home/alexandre/projet/Alex-OS/bin/kernel/c/string/string.o"
+  },
+  {
+    "arguments": [
+      "/home/alexandre/projet/Alex-OS/toolchain/i686-elf/bin/i686-elf-gcc",
+      "-std=c99",
+      "-g",
+      "-ffreestanding",
+      "-I./",
+      "-I./../libs/",
+      "-c",
+      "-o",
+      "/home/alexandre/projet/Alex-OS/bin/kernel/c/arch/i686/ata.o",
+      "arch/i686/ata.c"
+    ],
+    "directory": "/home/alexandre/projet/Alex-OS/kernel",
+    "file": "/home/alexandre/projet/Alex-OS/kernel/arch/i686/ata.c",
+    "output": "/home/alexandre/projet/Alex-OS/bin/kernel/c/arch/i686/ata.o"
+  },
+  {
+    "arguments": [
+      "/home/alexandre/projet/Alex-OS/toolchain/i686-elf/bin/i686-elf-gcc",
+      "-std=c99",
+      "-g",
+      "-ffreestanding",
+      "-I./",
+      "-I./../libs/",
+      "-c",
+      "-o",
+      "/home/alexandre/projet/Alex-OS/bin/kernel/c/arch/i686/fdc.o",
+      "arch/i686/fdc.c"
+    ],
+    "directory": "/home/alexandre/projet/Alex-OS/kernel",
+    "file": "/home/alexandre/projet/Alex-OS/kernel/arch/i686/fdc.c",
+    "output": "/home/alexandre/projet/Alex-OS/bin/kernel/c/arch/i686/fdc.o"
+  },
+  {
+    "arguments": [
+      "/home/alexandre/projet/Alex-OS/toolchain/i686-elf/bin/i686-elf-gcc",
+      "-std=c99",
+      "-g",
+      "-ffreestanding",
+      "-I./",
+      "-I./../libs/",
+      "-c",
+      "-o",
+      "/home/alexandre/projet/Alex-OS/bin/kernel/c/arch/i686/gdt.o",
+      "arch/i686/gdt.c"
+    ],
+    "directory": "/home/alexandre/projet/Alex-OS/kernel",
+    "file": "/home/alexandre/projet/Alex-OS/kernel/arch/i686/gdt.c",
+    "output": "/home/alexandre/projet/Alex-OS/bin/kernel/c/arch/i686/gdt.o"
+  },
+  {
+    "arguments": [
+      "/home/alexandre/projet/Alex-OS/toolchain/i686-elf/bin/i686-elf-gcc",
+      "-std=c99",
+      "-g",
+      "-ffreestanding",
+      "-I./",
+      "-I./../libs/",
+      "-c",
+      "-o",
+      "/home/alexandre/projet/Alex-OS/bin/kernel/c/arch/i686/idt.o",
+      "arch/i686/idt.c"
+    ],
+    "directory": "/home/alexandre/projet/Alex-OS/kernel",
+    "file": "/home/alexandre/projet/Alex-OS/kernel/arch/i686/idt.c",
+    "output": "/home/alexandre/projet/Alex-OS/bin/kernel/c/arch/i686/idt.o"
+  },
+  {
+    "arguments": [
+      "/home/alexandre/projet/Alex-OS/toolchain/i686-elf/bin/i686-elf-gcc",
+      "-std=c99",
+      "-g",
+      "-ffreestanding",
+      "-I./",
+      "-I./../libs/",
+      "-c",
+      "-o",
+      "/home/alexandre/projet/Alex-OS/bin/kernel/c/arch/i686/irq.o",
+      "arch/i686/irq.c"
+    ],
+    "directory": "/home/alexandre/projet/Alex-OS/kernel",
+    "file": "/home/alexandre/projet/Alex-OS/kernel/arch/i686/irq.c",
+    "output": "/home/alexandre/projet/Alex-OS/bin/kernel/c/arch/i686/irq.o"
+  },
+  {
+    "arguments": [
+      "/home/alexandre/projet/Alex-OS/toolchain/i686-elf/bin/i686-elf-gcc",
+      "-std=c99",
+      "-g",
+      "-ffreestanding",
+      "-I./",
+      "-I./../libs/",
+      "-c",
+      "-o",
+      "/home/alexandre/projet/Alex-OS/bin/kernel/c/arch/i686/isr.o",
+      "arch/i686/isr.c"
+    ],
+    "directory": "/home/alexandre/projet/Alex-OS/kernel",
+    "file": "/home/alexandre/projet/Alex-OS/kernel/arch/i686/isr.c",
+    "output": "/home/alexandre/projet/Alex-OS/bin/kernel/c/arch/i686/isr.o"
+  },
+  {
+    "arguments": [
+      "/home/alexandre/projet/Alex-OS/toolchain/i686-elf/bin/i686-elf-gcc",
+      "-std=c99",
+      "-g",
+      "-ffreestanding",
+      "-I./",
+      "-I./../libs/",
+      "-c",
+      "-o",
+      "/home/alexandre/projet/Alex-OS/bin/kernel/c/arch/i686/isrs_gen.o",
+      "arch/i686/isrs_gen.c"
+    ],
+    "directory": "/home/alexandre/projet/Alex-OS/kernel",
+    "file": "/home/alexandre/projet/Alex-OS/kernel/arch/i686/isrs_gen.c",
+    "output": "/home/alexandre/projet/Alex-OS/bin/kernel/c/arch/i686/isrs_gen.o"
+  },
+  {
+    "arguments": [
+      "/home/alexandre/projet/Alex-OS/toolchain/i686-elf/bin/i686-elf-gcc",
+      "-std=c99",
+      "-g",
+      "-ffreestanding",
+      "-I./",
+      "-I./../libs/",
+      "-c",
+      "-o",
+      "/home/alexandre/projet/Alex-OS/bin/kernel/c/arch/i686/keyboard.o",
+      "arch/i686/keyboard.c"
+    ],
+    "directory": "/home/alexandre/projet/Alex-OS/kernel",
+    "file": "/home/alexandre/projet/Alex-OS/kernel/arch/i686/keyboard.c",
+    "output": "/home/alexandre/projet/Alex-OS/bin/kernel/c/arch/i686/keyboard.o"
+  },
+  {
+    "arguments": [
+      "/home/alexandre/projet/Alex-OS/toolchain/i686-elf/bin/i686-elf-gcc",
+      "-std=c99",
+      "-g",
+      "-ffreestanding",
+      "-I./",
+      "-I./../libs/",
+      "-c",
+      "-o",
+      "/home/alexandre/projet/Alex-OS/bin/kernel/c/arch/i686/pic.o",
+      "arch/i686/pic.c"
+    ],
+    "directory": "/home/alexandre/projet/Alex-OS/kernel",
+    "file": "/home/alexandre/projet/Alex-OS/kernel/arch/i686/pic.c",
+    "output": "/home/alexandre/projet/Alex-OS/bin/kernel/c/arch/i686/pic.o"
+  },
+  {
+    "arguments": [
+      "/home/alexandre/projet/Alex-OS/toolchain/i686-elf/bin/i686-elf-gcc",
+      "-std=c99",
+      "-g",
+      "-ffreestanding",
+      "-I./",
+      "-I./../libs/",
+      "-c",
+      "-o",
+      "/home/alexandre/projet/Alex-OS/bin/kernel/c/arch/i686/pci/pci.o",
+      "arch/i686/pci/pci.c"
+    ],
+    "directory": "/home/alexandre/projet/Alex-OS/kernel",
+    "file": "/home/alexandre/projet/Alex-OS/kernel/arch/i686/pci/pci.c",
+    "output": "/home/alexandre/projet/Alex-OS/bin/kernel/c/arch/i686/pci/pci.o"
   }
 ]

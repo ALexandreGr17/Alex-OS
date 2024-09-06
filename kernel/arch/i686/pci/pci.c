@@ -92,7 +92,7 @@ void get_bar(uint8_t bus, uint8_t slot, uint8_t func, uint8_t header_type, hardw
 	for(int i = 0; i < max_bar; i++){
 		uint32_t bar_value = pci_controller_read(bus, slot, func, 0x10 + 4 * i);
 		if(device->class_code == 0x6){
-			printf("0x%x\n", bar_value);
+			//printf("0x%x\n", bar_value);
 		}
 		if((bar_value & 1) == BAR_TYPE_MEM){
 			device->bar[i].type = BAR_TYPE_MEM;

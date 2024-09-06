@@ -16,6 +16,7 @@ typedef struct {
 }memory_info_t;
 
 typedef struct {
+	uint32_t partition_location;
 	memory_info_t Memory;
 	uint8_t BootDevice;
 } boot_parameters_t;

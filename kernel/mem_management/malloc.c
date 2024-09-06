@@ -4,11 +4,11 @@
 #include "x86.h"
 
 void* get_data_block(memory_header_t* header){
-	return header + sizeof(memory_header_t);
+	return header +1; //+ sizeof(memory_header_t);
 }
 
 memory_header_t* get_header(void* block){
-	return (memory_header_t*)block - sizeof(memory_header_t);
+	return (memory_header_t*)block - 1;
 }
 
 uint64_t align(uint64_t size){
@@ -21,7 +21,10 @@ memory_header_t* expand(uint64_t size){
 	if(heap->last_header == NULL){
 		next_addr = heap->block_strart + heap->used_size;
 	}
-	if(next_addr + size /*+ sizeof(memory_header_t)*/ > heap->block_strart + heap->block_size){
+	if(next_addr + size  > heap->block_strart + heap->block_size){
+		printf("expend fail 1\n");
+		printf("next_addr: 0x%lx, size: 0x%x, block_start: 0x%lx, blocksize: 0x%x\n", 
+				next_addr, size, heap->block_strart, heap->block_size);
 		return NULL;
 	}
 	heap->used_size += size + sizeof(memory_header_t);
@@ -62,13 +65,15 @@ void debug_header(void* ptr){
 	if(header == NULL){
 		return;
 	}
+	printf("0x%x\n", sizeof(memory_header_t));
 	printf("\n-------------------\nHEADER:\n");
 	printf("Start: 0x%lx\n", header);
+	printf("Data Start: 0x%lx\n", header + 0x1);
 	printf("size: 0x%lx\n", header->size);
 	printf("used size: 0x%lx\n", header->used_size);
 	printf("next: 0x%lx\n", header->next);
 	printf("prev: 0x%lx\n", header->prev);
-	printf("free: 0x%x", header->free);
+	printf("free: 0x%x\n", header->free);
 }
 
 void free(void* ptr){

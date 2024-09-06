@@ -1,0 +1,11 @@
+[
+  {
+    "arguments": [
+      "/usr/bin/gcc",
+      "-c",
+      "fat.c"
+    ],
+    "directory": "/home/alexandre/projet/Alex-OS/test",
+    "file": "/home/alexandre/projet/Alex-OS/test/fat.c"
+  }
+]

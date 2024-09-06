@@ -15,12 +15,13 @@ typedef struct {
 	uint16_t	control_port;
 
 	uint8_t		drive_number;
+	uint32_t	partition_offset;
 } disk_ata_t;
 
-void ata_init(disk_ata_t* ata, uint8_t master);
+void ata_init(disk_ata_t* ata, uint8_t master, uint32_t partition_offset);
 void identify(disk_ata_t* ata);
-void ata_read28(disk_ata_t* ata, uint32_t lba, uint8_t* data, uint16_t count);
-void ata_write28(disk_ata_t* ata, uint32_t lba, uint8_t* data, uint16_t count);
+uint8_t ata_read28(void* ata, uint32_t lba, uint8_t nb_sectors, uint8_t* data);
+uint8_t ata_write28(void* ata, uint32_t lba, uint8_t nb_sectors, uint8_t* data);
 void ata_flush(disk_ata_t* ata);
 
 #endif

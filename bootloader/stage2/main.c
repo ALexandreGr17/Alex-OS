@@ -39,13 +39,14 @@ void __attribute__((cdecl)) cstart(uint16_t bootDrive, uint32_t partition){
 		printf(" Fat init failed\r\n");
 		goto end;
 	}
-
 	putc('[');
 	putc_color('x', 0x0a);
 	putc(']');
 	printf(" FAT init success\r\n");
 
-	uint8_t* kernel_buffer = kernel;
+
+	Memory_detect(&bootparams.Memory);
+	uint8_t* kernel_buffer = (uint8_t*)bootparams.Memory.regions[3].Begin;
 	uint32_t read;
 	FAT_file* fd = FAT_Open(&partition_info, "./kernel.bin");
 	if(!fd){
@@ -55,17 +56,22 @@ void __attribute__((cdecl)) cstart(uint16_t bootDrive, uint32_t partition){
 		printf(" Fat can't find kernel failed\r\n");
 		goto end;
 	}
+
+	uint64_t size = 0;
 	while((read = FAT_Read(&partition_info, fd, MEMORY_LOAD_SIZE, KernelLoadBuffer))){
 		memcpy(kernel_buffer, KernelLoadBuffer, read);
 		kernel_buffer += read;
+		size += read;
 	}
+	size += (256 * 8) + 6 + 0x200; // sizeof IDT + tmp padding for malloc idk
+	//printf("size 0x%x\n", size);
+	bootparams.Memory.regions[3].Begin += size % 8 == 0 ? size : (size + (8 - size % 8));
 	FAT_Close(fd);
 	
 	// prepare boot params
 	
-	Memory_detect(&bootparams.Memory);
 	bootparams.BootDevice = bootDrive;
-
+	bootparams.partition_location = partition_info.partition_offset;
 	KernelStart kernel_start = (KernelStart)kernel;
 	kernel_start(&bootparams);
 

@@ -1,15 +1,17 @@
 #include "arch/i686/fdc.h"
+#include "disk.h"
 #include <stdint.h>
 #include <arch/i686/isr.h>
 #include <boot/bootparams.h>
-#include <memory.h>
 #include <stdio.h>
+#include <memory/memory.h>
 #include <hal/hal.h>
 #include <arch/i686/irq.h>
 #include <arch/i686/keyboard.h>
 #include <arch/i686/pci/pci.h>
 #include <arch/i686/ata.h>
 #include <mem_management.h>
+#include <filesystem/fat.h>
 
 extern uint8_t __bss_start;
 extern uint8_t __end;
@@ -52,6 +54,8 @@ void __attribute__((section(".entry"))) start(boot_parameters_t* bootparams){
 		goto end;
 	}
 
+	printf("0x%lx\n", bootparams->partition_location);
+
 	/*
 	uint16_t size;
 	pci_bar_t* bars = pci_get_port_info(pci_ds[0], &size);
@@ -61,12 +65,39 @@ void __attribute__((section(".entry"))) start(boot_parameters_t* bootparams){
 
 
 	//crash_me();
-	/*
+	
 	printf("\n\n");
 	disk_ata_t atam0 = {.base_port = 0x1F0, .master = 1};
-	ata_init(&atam0, 1);
+	ata_init(&atam0, 1, bootparams->partition_location);
 	identify(&atam0);
 
+	disk_t disk = {
+		.disk = &atam0,
+		.disk_read = &ata_read28,
+		.disk_write = &ata_write28
+	};
+
+	if(FAT_init(&disk)){
+		printf("FAT init failed\n");
+		goto end;
+	}
+
+	printf("FAT init\n");
+/*
+	FAT_file_t* file = FAT_open(&disk, "/test.txt");
+	if(!file){
+		printf("FILE not found\n");
+		goto end;
+	}
+	printf("file found\n");
+
+	char test[31] = {0};
+	FAT_read(&disk, file, 30, test);
+	printf("%s\n", test);
+	//FAT_ls(&disk);
+	//FAT_create(&disk, "test2.txt");
+	//FAT_ls(&disk);*/
+/*
 	char* buffer = "Hello world";
 	ata_write28(&atam0, 0, buffer, 11);
 	ata_flush(&atam0);

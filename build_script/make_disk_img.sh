@@ -70,9 +70,9 @@ echo "Copying files to ${TARGET_PARTITION} (mounted on /tmp/alexos)..."
 mkdir -p /tmp/alexos
 sudo mount ${TARGET_PARTITION} /tmp/alexos
 sudo cp ${BUILD_DIR}/kernel.bin /tmp/alexos
-#cp test.txt /tmp/alexos
-#mkdir /tmp/alexos/test
-#cp test.txt /tmp/nbos/test
+sudo cp test.txt /tmp/alexos
+sudo mkdir /tmp/alexos/test
+sudo cp test.txt /tmp/alexos/test
 sudo umount /tmp/alexos
 
 # destroy loopback device

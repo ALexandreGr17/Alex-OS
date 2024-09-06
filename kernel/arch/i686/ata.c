@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
-void ata_init(disk_ata_t* ata, uint8_t master){
+void ata_init(disk_ata_t* ata, uint8_t master, uint32_t partition_offset){
 	ata->error_port = ata->base_port + 1;
 	ata->sector_port = ata->base_port + 2;
 	ata->lba_lo_port = ata->base_port + 3;
@@ -16,6 +16,7 @@ void ata_init(disk_ata_t* ata, uint8_t master){
 	ata->control_port = ata->base_port + 0x206;
 
 	ata->master = master;
+	ata->partition_offset = partition_offset;
 }
 
 void ata_delay(disk_ata_t* ata){
@@ -67,81 +68,82 @@ void identify(disk_ata_t* ata){
 
 
 	for(int i = 0; i < 256; i++){
-		printf("0x%x ", i686_inw(ata->base_port));
+		i686_inw(ata->base_port);
+	//	printf("0x%x ", i686_inw(ata->base_port));
 		ata_delay(ata);
 	}
 }
 
-void ata_read28(disk_ata_t* ata, uint32_t lba, uint8_t* data, uint16_t count){
+#define SECTOR_SIZE 512
+
+uint8_t ata_read28(void* disk, uint32_t lba, uint8_t nb_sectors, uint8_t* data){
+	disk_ata_t* ata = disk;
 	if(lba & 0xF0000000){
-		return;
+		return -1;
 	}
-	
-	i686_outb(ata->drive_select_port, (ata->master ? 0xE0 : 0xF0) | ((lba >> 24) & 0x0F));
+
+	uint32_t lba_real = ata->partition_offset + lba;
+
+
+	i686_outb(ata->drive_select_port, (ata->master ? 0xE0 : 0xF0) | ((lba_real >> 24) & 0x0F));
 	ata_delay(ata);
 
-	i686_outb(ata->sector_port, 1);
-	i686_outb(ata->lba_lo_port, lba & 0xFF);
-	i686_outb(ata->lba_mid_port, (lba >> 8) & 0xFF);
-	i686_outb(ata->lba_hi_port, (lba >> 16) & 0xFF);
+	i686_outb(ata->sector_port, nb_sectors);
+	i686_outb(ata->lba_lo_port, lba_real & 0xFF);
+	i686_outb(ata->lba_mid_port, (lba_real >> 8) & 0xFF);
+	i686_outb(ata->lba_hi_port, (lba_real >> 16) & 0xFF);
 
 	i686_outb(ata->command_port, 0x20);
 
-	int8_t status = i686_inb(ata->status_port);
-	while(status & 0x80 && !(status & 1)){
-		status = i686_inb(ata->status_port);
-	}
+	for(int i = 0; i < nb_sectors; i++){
+		int8_t status = i686_inb(ata->status_port);
+		while(status & 0x80 && !(status & 1)){
+			status = i686_inb(ata->status_port);
+		}
 
-	if(status & 1){
-		printf("error while reading from disk\n");
-		return;
-	}
+		if(status & 1){
+			printf("error while reading from disk\n");
+			return -2;
+		}
 
-	for(int i = 0; i < count; i+=2){
-		uint16_t data16 = i686_inw(ata->base_port);
-		data[i] = (data16 >> 8) & 0xFF;
-		if(i+1 < count){
-			data[i+1] = data16 & 0xFF;
+		for(int j = 0; j < SECTOR_SIZE; j+=2){
+			uint16_t data16 = i686_inw(ata->base_port);
+			data[SECTOR_SIZE * i + j] = data16 & 0xFF;
+			if(j+1 < SECTOR_SIZE){
+				data[SECTOR_SIZE * i + j+1] = (data16 >> 8) & 0xFF;
+			}
 		}
 	}
-
-	for(int i = count; i < 512; i++){
-		i686_inw(ata->base_port);
-	}
+	return 0;
 }
 
-void ata_write28(disk_ata_t* ata, uint32_t lba, uint8_t* data, uint16_t count){
+uint8_t ata_write28(void* disk, uint32_t lba, uint8_t nb_sectors,uint8_t* data){
+	disk_ata_t* ata = disk;
 	if(lba & 0xF0000000){
-		return;
+		return -1;
 	}
 
-	if(count > 512){
-		return;
-	}
-	
 	i686_outb(ata->drive_select_port, (ata->master ? 0xE0 : 0xF0) | ((lba >> 24) & 0x0F));
 	ata_delay(ata);
 
-	i686_outb(ata->sector_port, 1);
+	i686_outb(ata->sector_port, nb_sectors);
 	i686_outb(ata->lba_lo_port, lba & 0xFF);
 	i686_outb(ata->lba_mid_port, (lba >> 8) & 0xFF);
 	i686_outb(ata->lba_hi_port, (lba >> 16) & 0xFF);
 
 	i686_outb(ata->command_port, 0x30);
 
-	printf("\nWriting data\n");
-	for(uint16_t i = 0; i < count; i+=2){
-		uint16_t data16 = data[i] << 8;
-		if (i+1 < count){
-			data16 |= data[i+1];
+	//printf("\nWriting data\n");
+	for(int i = 0; i < nb_sectors; i++){
+		for(uint16_t j = 0; j < SECTOR_SIZE; j+=2){
+			uint16_t data16 = data[i * SECTOR_SIZE + j] << 8;
+			if (i+1 < SECTOR_SIZE){
+				data16 |= data[i * SECTOR_SIZE + j+1];
+			}
+			i686_outw(ata->base_port, data16);
 		}
-		i686_outw(ata->base_port, data16);
 	}
-
-	for(uint16_t i = count + (count % 2); i < 512; i+=2){
-		uint16_t data16 = 0;
-		i686_outw(ata->base_port, data16);
-	}
+	return 0;
 }
 
 void ata_flush(disk_ata_t* ata){

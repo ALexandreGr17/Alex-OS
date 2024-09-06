@@ -36,7 +36,6 @@ void init_memory_management(memory_info_t* mem_info){
 	heap->used_size = sizeof(heap_t);
 	heap->last_header = NULL;
 	heap->first_header = NULL;
-	int x = 0;
 }
 
 
@@ -44,8 +43,10 @@ void debug_heap(){
 	printf("\n----------------\nHEAP:\n");
 	printf("start: 0x%lx\n", heap->block_strart);
 	printf("size: 0x%lx\n", heap->block_size);
+	printf("used_size: 0x%lx\n", heap->used_size);
 	printf("first header: 0x%lx\n",heap->first_header);
 	printf("last header: 0x%lx\n",heap->last_header);
+	printf("\n----------------\n");
 }
 
 
