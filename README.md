@@ -13,9 +13,9 @@ DONE:
 - [X] Disk image
 - [x] support FAT12 (Bootloader)
 - [x] FAT32/16 support (Bootloader)
+- [x] Memory Management
 
 TODO:
-- [ ] Memory Management
 - [ ] FAT32/16/12 support (Kernel)
 - [ ] PCI memory mode
 - [ ] EXT2 support
