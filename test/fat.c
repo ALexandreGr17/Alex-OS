@@ -98,6 +98,7 @@ uint32_t first_fat_sector;
 uint32_t data_sectors;
 uint32_t total_clusters;
 uint32_t first_root_dir_sector;
+uint8_t fat_type;
 
 file_t root_dir;
 
@@ -127,14 +128,58 @@ void read_fat(FILE* disk, uint8_t offset){
 
 uint32_t next_cluster(FILE* disk, uint32_t current_cluster){
 	uint32_t fat_offset = current_cluster + (current_cluster / 2);
+
+	switch (fat_type) {
+		case 12:
+			fat_offset = current_cluster + (current_cluster / 2);
+			break;
+
+		case 16:
+			fat_offset = current_cluster * 2;
+			break;
+
+		case 32:
+			fat_offset = current_cluster * 4;
+			break;
+		default:
+			return 0;
+	}
+
 	uint32_t ent_offset = fat_offset % boot_sector.bytes_per_sector;
 
 	if(ent_offset < fat.fat_offset * 512 || ent_offset >= fat.fat_offset * 512 + 512){
 		read_fat(disk, ent_offset - (ent_offset % 512));
 	}
 
-	uint16_t val = *(uint16_t*)&fat.table[ent_offset];
-	return current_cluster & 1 ? val >> 4 : val & 0x0FFF;
+	uint32_t val;
+	switch (fat_type){
+		case 12:
+			val = *(uint16_t*)&fat.table[ent_offset];
+			if(current_cluster & 1){
+				val = val >> 4;
+			}
+			else {
+				val = val & 0x0FFF;
+			}
+
+			if(val >= 0x0FF8){
+				val |= 0xFFFFF000;
+			}
+			return val;
+
+		case 16:
+			val = *(uint16_t*)&fat.table[ent_offset];
+			if(val >= 0xFFF8){
+				val |= 0xFFFF0000;
+			}
+			return val;
+
+		case 32:
+			val = *(uint32_t*)&fat.table[ent_offset];
+			return val;
+
+	}
+	return 0;
 }
 
 uint32_t find_free_cluster(FILE* disk){
@@ -220,6 +265,18 @@ void seek_file(FILE* disk, file_t* file, uint32_t position){
 	}
 }
 
+void fat_detect(){
+	if(boot_sector.sector_per_fat == 0){
+		fat_type = 32;
+	}
+	else if(total_clusters < 4085){
+		fat_type = 12;
+	}
+	else {
+		fat_type = 16;
+	}
+}
+
 void FAT_init(FILE* disk){
 	read_boot_sector(disk);
 	total_sectors = (boot_sector.total_sectors ? boot_sector.total_sectors : boot_sector.large_sector_coutn);
@@ -229,8 +286,16 @@ void FAT_init(FILE* disk){
 	first_fat_sector = boot_sector.reserved_sector_count;
 	data_sectors = total_sectors - (boot_sector.reserved_sector_count + (boot_sector.nb_fat * fat_sectors) + root_dir_sectors);
 	total_clusters = data_sectors / boot_sector.sector_per_cluster;
-	// FAT12
-	first_root_dir_sector = first_data_sector - root_dir_sectors;
+	
+
+	fat_detect();
+
+	if(fat_type != 32){
+		first_root_dir_sector = first_data_sector - root_dir_sectors;
+	}
+	else {
+		first_root_dir_sector = boot_sector.ebr_32.root_dir_cluster;
+	}
 
 
 	root_dir.current_cluster = first_root_dir_sector;
@@ -240,6 +305,8 @@ void FAT_init(FILE* disk){
 	root_dir.size = root_dir_sectors * boot_sector.bytes_per_sector;
 
 	read_fat(disk, 0);
+
+
 }
 
 dir_entry_t entries[16];
@@ -337,6 +404,6 @@ int main(int agrc, char** argv){
 	seek_file(disk, &file2, 0);
 	read_file(disk, &file2, tmp, buffer);
 	buffer[tmp] = 0;
-	printf("%s\n", buffer);
+//	printf("%s\n", buffer);
 	fclose(disk);
 }
