@@ -353,6 +353,9 @@ void write_root_dir(FILE* disk, dir_entry_t* entry){
 
 }
 
+dir_entry_t* find_file(FILE* disk, char* filename){
+}
+
 int main(int agrc, char** argv){
 	if(agrc != 2){
 		printf("usage: fat <path_to_img>\n");

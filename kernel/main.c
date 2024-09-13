@@ -1,5 +1,6 @@
 #include "arch/i686/fdc.h"
 #include "disk.h"
+#include "errno.h"
 #include <stdint.h>
 #include <arch/i686/isr.h>
 #include <boot/bootparams.h>
@@ -54,7 +55,7 @@ void __attribute__((section(".entry"))) start(boot_parameters_t* bootparams){
 		goto end;
 	}
 
-	printf("0x%lx\n", bootparams->partition_location);
+	printf("location: 0x%lx\n", bootparams->partition_location);
 
 	/*
 	uint16_t size;
@@ -77,12 +78,23 @@ void __attribute__((section(".entry"))) start(boot_parameters_t* bootparams){
 		.disk_write = &ata_write28
 	};
 
-	if(FAT_init(&disk)){
-		printf("FAT init failed\n");
+	if(!FAT_init(&disk)){
+		printf("FAT init failed errno: 0x%x\n", errno);
 		goto end;
 	}
 
 	printf("FAT init\n");
+	int handle = FAT_open(&disk, "/test/test.txt");
+	if(handle < 0){
+		goto end;
+	}
+	char buffer[32] = {0};
+	printf("%d\n", handle);
+	int i = 0;
+	if((i = FAT_read(&disk, handle, 31, buffer)) != 31){
+		printf("ERROR ----------------------> %d\n", i);
+	}
+	printf("%s\n", buffer);
 /*
 	FAT_file_t* file = FAT_open(&disk, "/test.txt");
 	if(!file){

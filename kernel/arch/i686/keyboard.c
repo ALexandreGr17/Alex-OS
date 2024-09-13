@@ -16,7 +16,9 @@ bool num_lock = false;
 char is_printable(char c){
 	return (c >= 'a' && c <= 'e') || 
 		(c >= 'A' && c <= 'Z') ||
-		(c >= '0' && c <= '9');
+		(c >= '0' && c <= '9') ||
+		(c == ',' || c == ';' || 
+		 c == ':' || c == '!');
 }
 
 void keyboard_handler_main(Register* regs){
@@ -33,7 +35,23 @@ void keyboard_handler_main(Register* regs){
 			return;
 		}
 		if(keycode_translated[keycode] > 0){
-			char c = caps_lock ? keycode_translated[keycode] - 32 : keycode_translated[keycode];
+			char c = keycode_translated[keycode];
+			if(caps_lock && c >= 'a' && c <= 'z'){
+				c -= 32;
+			}
+
+			switch (c) {
+				case ',':
+					c = '?';
+					break;
+				case ';':
+					c = '.';
+					break;
+				case ':':
+					c = '/';
+					break;
+			}
+
 			if(c >= '0' && c <= '9' && !num_lock){
 				return;
 			}
@@ -88,6 +106,25 @@ void i686_Keyboard_init(){
 		}
 		else if (i >= 0x4f && i <= 0x51){
 			keycode_translated[i] = '1' + (i - 0x4f);
+		}
+		else if (i >= 0x32 && i <= 0x35){
+			switch (i){
+				case 0x32:
+					keycode_translated[i] = ',';
+					break;
+				case 0x33:
+					keycode_translated[i] = ';';
+					break;
+				case 0x34:
+					keycode_translated[i] = ':';
+					break;;
+				case 0x35:
+					keycode_translated[i] = '!';
+					break;
+			}
+		}
+		else if (i == 0x56){
+			keycode_translated[i] = '<';
 		}
 		else {
 			keycode_translated[i] = -1;
