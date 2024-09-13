@@ -17,10 +17,11 @@ DONE:
 
 TODO:
 - [ ] FAT32/16/12 support (Kernel)
-- [ ] PCI memory mode
 - [ ] EXT2 support
 - [ ] shell/Terminal
 - [ ] text editor
+- [ ] assembleur
+- [ ] basic support
 - [ ] c compiler
 - [ ] network basic (TCP/USP/ICMP network stack)
 - [ ] network manager

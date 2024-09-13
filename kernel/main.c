@@ -1,6 +1,7 @@
 #include "arch/i686/fdc.h"
 #include "disk.h"
 #include "errno.h"
+#include "string/string.h"
 #include <stdint.h>
 #include <arch/i686/isr.h>
 #include <boot/bootparams.h>
@@ -84,7 +85,7 @@ void __attribute__((section(".entry"))) start(boot_parameters_t* bootparams){
 	}
 
 	printf("FAT init\n");
-	int handle = FAT_open(&disk, "/test/test.txt");
+	/*int handle = FAT_open(&disk, "/test/test.txt");
 	if(handle < 0){
 		goto end;
 	}
@@ -94,21 +95,18 @@ void __attribute__((section(".entry"))) start(boot_parameters_t* bootparams){
 	if((i = FAT_read(&disk, handle, 31, buffer)) != 31){
 		printf("ERROR ----------------------> %d\n", i);
 	}
-	printf("%s\n", buffer);
-/*
-	FAT_file_t* file = FAT_open(&disk, "/test.txt");
-	if(!file){
-		printf("FILE not found\n");
-		goto end;
-	}
-	printf("file found\n");
+	printf("%s\n", buffer);*/
 
-	char test[31] = {0};
-	FAT_read(&disk, file, 30, test);
-	printf("%s\n", test);
-	//FAT_ls(&disk);
-	//FAT_create(&disk, "test2.txt");
-	//FAT_ls(&disk);*/
+	FAT_create_file(&disk, "/test/azer.txt");
+	printf("------------------------------------------\n");
+	int handle = FAT_open(&disk, "/test/azer.txt");
+	printf("%d\n", handle);
+	char* test = "Yo ca fonctionne\n";
+	/*FAT_write(&disk, handle, strlen(test), test);
+	printf("Written\n");
+	FAT_read(&disk, handle, strlen(test), test);
+	printf("%s\n", test);*/
+
 /*
 	char* buffer = "Hello world";
 	ata_write28(&atam0, 0, buffer, 11);

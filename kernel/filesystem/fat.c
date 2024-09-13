@@ -5,9 +5,11 @@
 #include <stdio.h>
 #include <errno.h>
 #include <mem_management.h>
+#include <filesystem/fat.h>
 
 #define MAX_OPEN_FILE	50
 #define ROOT_DIR_HANDLE -1
+#define EOF				0xFF
 
 typedef struct {
 	uint8_t  drive_number;
@@ -330,6 +332,7 @@ void debug_file(file_t* file){
 	printf("	handle: %i\n", file->handle);
 	printf("	first_cluster: 0x%x\n", file->first_cluster);
 	printf("	current_cluster: 0x%x\n", file->current_cluster);
+	printf("	position: %i\n", file->position);
 	printf("	lba_start: 0x%x\n", cluster_2_lba(file->first_cluster) * 512);
 	
 	printf("\n");
@@ -361,6 +364,7 @@ uint32_t FAT_read(disk_t* disk, int handle, uint32_t count, uint8_t* out){
 
 uint32_t FAT_write(disk_t* disk, int handle, uint32_t count, uint8_t* in){
 	file_t* file = handle == ROOT_DIR_HANDLE ? &root_dir : &opened_files[handle - 3];
+	debug_file(file);
 	uint32_t writed_size = 0;
 	while (count > 0) {
 		uint16_t write_size = MIN(512, count);
@@ -383,6 +387,79 @@ uint32_t FAT_write(disk_t* disk, int handle, uint32_t count, uint8_t* in){
 			file->current_cluster = find_free_cluster(disk);
 			update_fat(disk, old_cluster, file->current_cluster);
 			update_fat(disk, file->current_cluster, 0xFFFFFFF8);
+		}
+	}
+	return writed_size;
+}
+
+void FAT_seek(disk_t* disk, int handle, uint32_t offset, uint8_t where){
+	file_t* file = handle == ROOT_DIR_HANDLE ? &root_dir : &opened_files[handle - 3];
+	if(where == SEEK_END){
+		file->current_cluster = file->first_cluster;
+		while(file->current_cluster < 0xFFFFFFF8){
+			disk->disk_read(disk->disk, cluster_2_lba(file->current_cluster), 1, file->buffer);
+			int i = 0;
+			while(i < 512){
+				if(file->is_dir){
+					if(file->buffer[i] == 0){
+						file->size = file->position;
+						return;
+					}
+					i += sizeof(dir_entry_t);
+					file->position += sizeof(dir_entry_t);
+				}
+				else {
+					if(file->buffer[i] == EOF){
+						file->size = file->position;
+						return;
+					}
+					i++;
+					file->position++;
+				}
+			}
+		}
+	}
+
+	if(where == SEEK_CUR){
+		file->position += offset;
+		offset += file->position;
+	}
+	else {
+		file->position = offset;
+	}
+	file->current_cluster = file->first_cluster;
+
+	while (offset > 512 && file->current_cluster < 0xFFFFFFF8) {
+		file->current_cluster = next_cluster(disk, file->current_cluster);
+		offset -= MIN(offset, 512);
+	}
+}
+
+uint32_t FAT_append(disk_t* disk, int handle, uint32_t count, uint8_t* in){
+	file_t* file = handle == ROOT_DIR_HANDLE ? &root_dir : &opened_files[handle - 3];
+	uint32_t writed_size = 0;
+	FAT_seek(disk, handle, 0, SEEK_END);
+	uint16_t offset = file->position % 512;
+	while(count > 0){
+		uint16_t to_write = MIN(count, 512 - offset);
+		disk->disk_read(disk->disk, cluster_2_lba(file->current_cluster), 1, file->buffer);
+		memcpy(file->buffer + offset, in, to_write);
+		disk->disk_write(disk->disk, cluster_2_lba(file->current_cluster), 1, file->buffer);
+
+		offset = 0;
+		count -= to_write;
+		in += to_write;
+		file->position += to_write;
+		file->size += to_write;
+		writed_size += to_write;
+		if(to_write >= 512){
+			uint32_t old_cluster = file->current_cluster;
+			file->current_cluster = next_cluster(disk, file->current_cluster);
+			if(file->current_cluster > 0xFFFFFFF8){
+				file->current_cluster = find_free_cluster(disk);
+				update_fat(disk, file->current_cluster, 0xFFFFFFF8);
+				update_fat(disk, old_cluster, file->current_cluster);
+			}
 		}
 	}
 	return writed_size;
@@ -449,7 +526,11 @@ int FAT_open(disk_t* disk, char* path){
 		return 0;
 	}
 
+
+	printf("%s\n", path);
 	file_t* dir = &root_dir;
+	dir->current_cluster = dir->first_cluster;
+	dir->position = 0;
 	if(*path == '/'){
 		path++;
 	}
@@ -477,6 +558,7 @@ int FAT_open(disk_t* disk, char* path){
 		}
 
 		entry = find_file(disk, dir, path);
+		debug_entry(entry);
 		if(!entry){
 			errno = -1;
 			return -1;
@@ -500,4 +582,63 @@ int FAT_open(disk_t* disk, char* path){
 
 	file->open = 1;
 	return handle;
+}
+
+char* parse_filename_create_file(char* filename){
+	int last_pos = 0;
+	for(int i = 0; filename[i]; i++){
+		if(filename[i] == '/'){
+			last_pos = i;
+		}
+	}
+	filename[last_pos] = 0;
+	return filename + last_pos + 1;
+}
+
+void normal_to_fat_name(char* in, char* out){
+	memset(out, ' ', 11);
+	char* ext = strchr(in, '.');
+	if(ext != NULL){
+		for(int i = 0; i < 11 && in + i < ext; i++){
+			out[i] = toupper(in[i]);
+		}
+		int ext_len = strlen(ext);
+		for(int i = 1; i < ext_len; i++){
+			out[i + 11 - ext_len] = toupper(ext[i]);
+		}
+	}
+	else {
+		for(int i = 0; in[i] && i < 11; i++){
+			out[i] = toupper(in[i]);
+		}
+	}
+	
+
+}
+
+uint8_t FAT_create_file(disk_t* disk, char* path){
+	errno = 0;
+	char* file_name = parse_filename_create_file(path);
+	int d_hd = FAT_open(disk, path);
+	FAT_seek(disk, d_hd, 0, SEEK_SET);
+
+
+	if(d_hd < 0){
+		errno = -1;
+		return 0;
+	}
+	
+	uint32_t new_cluster = find_free_cluster(disk);
+	printf("0x%x\n", new_cluster);
+	update_fat(disk, new_cluster, 0xFFFFFFF8);
+	dir_entry_t entry = {0};
+	normal_to_fat_name(file_name, entry.filename);
+	entry.attributes = 0;
+	entry.size = 0;
+	entry.first_cluster_hi = (new_cluster >> 16) & 0xFFFF;
+	entry.first_cluster_lo = new_cluster & 0xFFFF;
+
+	FAT_append(disk, d_hd, sizeof(dir_entry_t), &entry);
+	
+	return 1;
 }

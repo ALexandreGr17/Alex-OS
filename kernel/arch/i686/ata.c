@@ -123,22 +123,24 @@ uint8_t ata_write28(void* disk, uint32_t lba, uint8_t nb_sectors,uint8_t* data){
 		return -1;
 	}
 
+	uint32_t lba_real = ata->partition_offset + lba;
+
 	i686_outb(ata->drive_select_port, (ata->master ? 0xE0 : 0xF0) | ((lba >> 24) & 0x0F));
 	ata_delay(ata);
 
 	i686_outb(ata->sector_port, nb_sectors);
-	i686_outb(ata->lba_lo_port, lba & 0xFF);
-	i686_outb(ata->lba_mid_port, (lba >> 8) & 0xFF);
-	i686_outb(ata->lba_hi_port, (lba >> 16) & 0xFF);
+	i686_outb(ata->lba_lo_port, lba_real & 0xFF);
+	i686_outb(ata->lba_mid_port, (lba_real >> 8) & 0xFF);
+	i686_outb(ata->lba_hi_port, (lba_real >> 16) & 0xFF);
 
 	i686_outb(ata->command_port, 0x30);
 
 	//printf("\nWriting data\n");
 	for(int i = 0; i < nb_sectors; i++){
 		for(uint16_t j = 0; j < SECTOR_SIZE; j+=2){
-			uint16_t data16 = data[i * SECTOR_SIZE + j] << 8;
+			uint16_t data16 = data[i * SECTOR_SIZE + j+1] << 8;
 			if (i+1 < SECTOR_SIZE){
-				data16 |= data[i * SECTOR_SIZE + j+1];
+				data16 |= data[i * SECTOR_SIZE + j];
 			}
 			i686_outw(ata->base_port, data16);
 		}
