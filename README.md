@@ -18,6 +18,9 @@ DONE:
 - [x] VFS (basique);
 TODO:
 - [ ] shell/Terminal
+- [ ] ELF support
+- [ ] exec
+- [ ] fork
 - [ ] VFS (multi disk)
 - [ ] EXT2 support
 - [ ] VFS (multi file system)
