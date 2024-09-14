@@ -14,9 +14,10 @@ DONE:
 - [x] support FAT12 (Bootloader)
 - [x] FAT32/16 support (Bootloader)
 - [x] Memory Management
+- [x] FAT32/16/12 support (Kernel)
 
 TODO:
-- [ ] FAT32/16/12 support (Kernel)
+- [ ] VFS
 - [ ] EXT2 support
 - [ ] shell/Terminal
 - [ ] text editor

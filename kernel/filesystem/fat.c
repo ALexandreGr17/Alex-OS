@@ -364,7 +364,6 @@ uint32_t FAT_read(disk_t* disk, int handle, uint32_t count, uint8_t* out){
 
 uint32_t FAT_write(disk_t* disk, int handle, uint32_t count, uint8_t* in){
 	file_t* file = handle == ROOT_DIR_HANDLE ? &root_dir : &opened_files[handle - 3];
-	debug_file(file);
 	uint32_t writed_size = 0;
 	while (count > 0) {
 		uint16_t write_size = MIN(512, count);
@@ -378,6 +377,7 @@ uint32_t FAT_write(disk_t* disk, int handle, uint32_t count, uint8_t* in){
 		}
 		count -= write_size;
 		file->position += write_size;
+		file->size += write_size;
 		in += write_size;
 		writed_size += write_size;
 
@@ -527,7 +527,6 @@ int FAT_open(disk_t* disk, char* path){
 	}
 
 
-	printf("%s\n", path);
 	file_t* dir = &root_dir;
 	dir->current_cluster = dir->first_cluster;
 	dir->position = 0;
@@ -558,7 +557,6 @@ int FAT_open(disk_t* disk, char* path){
 		}
 
 		entry = find_file(disk, dir, path);
-		debug_entry(entry);
 		if(!entry){
 			errno = -1;
 			return -1;
@@ -570,6 +568,7 @@ int FAT_open(disk_t* disk, char* path){
 		file->is_dir = (entry->attributes & DIRECTORY) != 0;
 		file->size = entry->size;
 		file->position = 0;
+		file->handle = handle;
 		memcpy(file->filename, entry->filename, 11);
 		free(entry);
 		path = next_dir;
@@ -578,6 +577,7 @@ int FAT_open(disk_t* disk, char* path){
 		}
 		next_dir = strchr(path, '/');
 		dir = file;
+		dir->handle = file->handle;
 	}while(path != NULL);
 
 	file->open = 1;
@@ -629,7 +629,6 @@ uint8_t FAT_create_file(disk_t* disk, char* path){
 	}
 	
 	uint32_t new_cluster = find_free_cluster(disk);
-	printf("0x%x\n", new_cluster);
 	update_fat(disk, new_cluster, 0xFFFFFFF8);
 	dir_entry_t entry = {0};
 	normal_to_fat_name(file_name, entry.filename);

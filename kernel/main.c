@@ -99,13 +99,14 @@ void __attribute__((section(".entry"))) start(boot_parameters_t* bootparams){
 
 	FAT_create_file(&disk, "/test/azer.txt");
 	printf("------------------------------------------\n");
-	int handle = FAT_open(&disk, "/test/azer.txt");
+	int handle = FAT_open(&disk, "test/azer.txt");
 	printf("%d\n", handle);
 	char* test = "Yo ca fonctionne\n";
-	/*FAT_write(&disk, handle, strlen(test), test);
+	FAT_write(&disk, handle, strlen(test), test);
 	printf("Written\n");
+	FAT_seek(&disk, handle, 0, SEEK_SET);
 	FAT_read(&disk, handle, strlen(test), test);
-	printf("%s\n", test);*/
+	printf("%s\n", test);
 
 /*
 	char* buffer = "Hello world";
