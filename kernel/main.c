@@ -29,8 +29,18 @@ void __attribute__((section(".entry"))) start(boot_parameters_t* bootparams){
 	memset(&__bss_start, 0, (&__end) - (&__bss_start));
 	clrscr();
 
+	printf("Memory region count: %i\n", bootparams->Memory.region_count);
+	for(int i = 0; i < bootparams->Memory.region_count; i++){
+		printf("Start: 0x%llx, length: 0x%llx, type: 0x%x\n", 
+				bootparams->Memory.regions[i].Begin, 
+				bootparams->Memory.regions[i].Length,
+				bootparams->Memory.regions[i].Type);
+	}
+
+
 	init_memory_management(&bootparams->Memory);
 	HAL_Initialaize();
+	debug_heap();
 	
 	for(int i = 0; i < 16; i++){
 		if(i != 1 && i != 6){
@@ -40,15 +50,7 @@ void __attribute__((section(".entry"))) start(boot_parameters_t* bootparams){
 
 	printf("Hello world from kernel\n");
 	printf("BootDevice: 0x%x\n", bootparams->BootDevice);
-	printf("Memory region count: %i\n", bootparams->Memory.region_count);
-	for(int i = 0; i < bootparams->Memory.region_count; i++){
-		printf("Start: 0x%llx, length: 0x%llx, type: 0x%x\n", 
-				bootparams->Memory.regions[i].Begin, 
-				bootparams->Memory.regions[i].Length,
-				bootparams->Memory.regions[i].Type);
-	}
-
-	
+		
 
 	print_all_pci_devices();
 	uint16_t pci_ds[2048];
@@ -105,7 +107,8 @@ void __attribute__((section(".entry"))) start(boot_parameters_t* bootparams){
 	FAT_create_file(&disk, "/test/azer.txt");
 	printf("------------------------------------------\n");
 
-	int handle = FAT_open(&disk, "test/azer.txt");
+	int handle = FAT_open(&disk, "/test/azer.txt");
+
 	printf("%d\n", handle);
 	char* test = "Yo ca fonctionne\n";
 	FAT_write(&disk, handle, strlen(test), test);

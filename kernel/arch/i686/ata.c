@@ -87,15 +87,16 @@ uint8_t ata_read28(void* disk, uint32_t lba, uint8_t nb_sectors, uint8_t* data){
 
 	i686_outb(ata->drive_select_port, (ata->master ? 0xE0 : 0xF0) | ((lba_real >> 24) & 0x0F));
 	ata_delay(ata);
-
+	
 	i686_outb(ata->sector_port, nb_sectors);
 	i686_outb(ata->lba_lo_port, lba_real & 0xFF);
 	i686_outb(ata->lba_mid_port, (lba_real >> 8) & 0xFF);
 	i686_outb(ata->lba_hi_port, (lba_real >> 16) & 0xFF);
 
 	i686_outb(ata->command_port, 0x20);
-
+	
 	for(int i = 0; i < nb_sectors; i++){
+		
 		int8_t status = i686_inb(ata->status_port);
 		while(status & 0x80 && !(status & 1)){
 			status = i686_inb(ata->status_port);
@@ -114,15 +115,32 @@ uint8_t ata_read28(void* disk, uint32_t lba, uint8_t nb_sectors, uint8_t* data){
 			}
 		}
 	}
+
 	return 0;
 }
+
+void ata_flush(disk_ata_t* ata){
+	i686_outb(ata->drive_select_port, (ata->master ? 0xE0 : 0xF0));
+	ata_delay(ata);
+	i686_outb(ata->command_port, 0xE7);
+
+	int8_t status = i686_inb(ata->status_port);
+	while(status & 0x80 && !(status & 1)){
+		status = i686_inb(ata->status_port);
+	}
+
+	if(status & 1){
+		printf("Error while flushing\n");
+	}
+}
+
 
 uint8_t ata_write28(void* disk, uint32_t lba, uint8_t nb_sectors,uint8_t* data){
 	disk_ata_t* ata = disk;
 	if(lba & 0xF0000000){
 		return -1;
 	}
-
+	
 	uint32_t lba_real = ata->partition_offset + lba;
 
 	i686_outb(ata->drive_select_port, (ata->master ? 0xE0 : 0xF0) | ((lba >> 24) & 0x0F));
@@ -145,20 +163,9 @@ uint8_t ata_write28(void* disk, uint32_t lba, uint8_t nb_sectors,uint8_t* data){
 			i686_outw(ata->base_port, data16);
 		}
 	}
+
+	ata_flush(ata);
 	return 0;
 }
 
-void ata_flush(disk_ata_t* ata){
-	i686_outb(ata->drive_select_port, (ata->master ? 0xE0 : 0xF0));
-	ata_delay(ata);
-	i686_outb(ata->command_port, 0xE7);
 
-	int8_t status = i686_inb(ata->status_port);
-	while(status & 0x80 && !(status & 1)){
-		status = i686_inb(ata->status_port);
-	}
-
-	if(status & 1){
-		printf("Error while flushing\n");
-	}
-}

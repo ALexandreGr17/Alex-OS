@@ -18,13 +18,12 @@ uint64_t align(uint64_t size){
 memory_header_t* expand(uint64_t size){
 	heap_t* heap = get_heap();
 	void* next_addr = heap->block_strart + heap->used_size;
-	if(heap->last_header == NULL){
-		next_addr = heap->block_strart + heap->used_size;
-	}
+	
 	if(next_addr + size  > heap->block_strart + heap->block_size){
 		printf("expend fail 1\n");
 		printf("next_addr: 0x%lx, size: 0x%x, block_start: 0x%lx, blocksize: 0x%x\n", 
 				next_addr, size, heap->block_strart, heap->block_size);
+		debug_heap();
 		return NULL;
 	}
 	heap->used_size += size + sizeof(memory_header_t);
@@ -58,6 +57,15 @@ void* malloc(uint64_t size){
 	header->used_size = size;
 	header->free = 0;
 	return get_data_block(header);
+}
+
+
+void* calloc(uint64_t size, uint8_t val){
+	uint8_t* buf = malloc(size);
+	for(int i = 0; i < size; i++){
+		buf[i] = val;
+	}
+	return buf;
 }
 
 void debug_header(void* ptr){

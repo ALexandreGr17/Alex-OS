@@ -13,20 +13,28 @@ heap_t* get_heap(){
 }
 
 void* get_next_free_block(memory_region_t* mem_regs, uint64_t* size){
+	while(current_block < mem_info->region_count){
+		if(mem_regs[current_block].Type == MEMORY_TYPE_USABLE){
+			*size = mem_regs[current_block].Length;
+			return (void*)mem_regs[current_block].Begin;
+		}
+		current_block++;
+	}/*
 	do {
 		if(mem_regs[current_block].Type == MEMORY_TYPE_USABLE){
 			*size = mem_regs[current_block].Length;
 			return (void*)mem_regs[current_block].Begin;
 		}
 		current_block--;
-	}while(current_block >= 0);
+	}while(current_block >= 0);*/
 	*size = 0;
 	return NULL;
 }
 
-void init_memory_management(memory_info_t* mem_info){
-	current_block = mem_info->region_count-1;
-	mem_info = mem_info;
+void init_memory_management(memory_info_t* mem_info_p){
+	current_block = 0;//mem_info_p->region_count-1;
+	
+	mem_info = mem_info_p;
 	uint64_t size = 0;
 	void* first_block = get_next_free_block(mem_info->regions, &size);
 	heap = first_block;

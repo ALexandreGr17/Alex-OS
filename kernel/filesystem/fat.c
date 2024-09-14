@@ -111,7 +111,7 @@ uint32_t first_root_dir_sector;
 uint8_t fat_type;
 
 file_t root_dir;
-file_t opened_files[MAX_OPEN_FILE];
+file_t* opened_files;
 
 uint8_t read_boot_sector(disk_t* disk){
 	return disk->disk_read(disk->disk, 0, 1, (uint8_t*)&boot_sector);
@@ -144,6 +144,8 @@ uint8_t FAT_init(disk_t* disk){
 		errno = -1;
 		return 0;
 	}
+
+	opened_files = calloc(sizeof(file_t) * MAX_OPEN_FILE, 0);
 
 	total_sectors = (boot_sector.total_sectors ? boot_sector.total_sectors : boot_sector.large_sector_coutn);
 	fat_sectors = (boot_sector.sector_per_fat ? boot_sector.sector_per_fat : boot_sector.ebr_32.sector_per_fat);
@@ -347,8 +349,10 @@ uint32_t FAT_read(disk_t* disk, int handle, uint32_t count, uint8_t* out){
 	uint32_t nb_read = 0;
 	uint32_t offset = file->position % 512;
 	while (count > 0 && file->current_cluster < 0xFFFFFFF8) {
+		
 		uint16_t nb_to_read = MIN(count + offset, 512);
 		disk->disk_read(disk->disk, cluster_2_lba(file->current_cluster), 1, file->buffer);
+
 		memcpy(out, file->buffer + offset, nb_to_read);
 		out += nb_to_read - offset;
 		nb_read = nb_to_read - offset;
@@ -494,8 +498,8 @@ dir_entry_t* find_file(disk_t* disk, file_t* dir, char* filename){
 			FAT_name[i] = toupper(filename[i]);
 		}
 	}
-	
 	dir_entry_t* entry = malloc(sizeof(dir_entry_t));
+	
 	do {
 		if(!read_next_entry(disk, dir, entry)){
 			errno = -2;
@@ -504,8 +508,9 @@ dir_entry_t* find_file(disk_t* disk, file_t* dir, char* filename){
 		if(memcmp(entry->filename, FAT_name, 11)){
 			return entry;
 		}
-	}while(entry->filename[0] != 0);
 
+	}while(entry->filename[0] != 0);
+	
 	free(entry);
 	errno = 0;
 	return NULL;
@@ -545,6 +550,7 @@ int FAT_open(disk_t* disk, char* path){
 
 	char* next_dir = strchr(path, '/');
 	dir_entry_t* entry;
+
 	do {
 		if(next_dir != NULL){
 			uint16_t size_name = next_dir - path;
@@ -558,6 +564,7 @@ int FAT_open(disk_t* disk, char* path){
 
 		entry = find_file(disk, dir, path);
 		if(!entry){
+		//	debug_heap();
 			errno = -1;
 			return -1;
 		}
