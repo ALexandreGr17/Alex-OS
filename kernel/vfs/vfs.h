@@ -4,6 +4,13 @@
 #include "disk.h"
 #include <stdint.h>
 
+enum {
+	STDIN = 0,
+	STDOUT = 1,
+	STDERR = 2,
+};
+
+
 void vfs_init(disk_t** disk, uint8_t nb_disk);
 
 int open(char* path);

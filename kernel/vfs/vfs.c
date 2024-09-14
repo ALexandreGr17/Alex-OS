@@ -9,12 +9,6 @@
 disk_t** disks;
 std_t* stds[3];
 
-enum {
-	STDIN = 0,
-	STDOUT = 1,
-	STDERR = 2,
-};
-
 void vfs_init(disk_t** disk, uint8_t nb_disk){
 	disks = malloc(sizeof(disk_t*) * nb_disk);
 	for(int i = 0; i < nb_disk; i++){
@@ -37,11 +31,13 @@ uint32_t read(int handle, uint32_t size, void* out){
 
 	char c = 1;
 	uint32_t count = 0;
-	for(int i = 0; i < size && c != 0; i++){
+	while (c != '\n') {
 		c = std_get(stds[handle]);
-		*(char*)out = c;
-		out++;
-		count++;
+		if(count < size && c != 0){
+			*(char*)out = c;
+			out++;
+			count++;
+		}
 	}
 	return count;
 }

@@ -15,11 +15,12 @@ DONE:
 - [x] FAT32/16 support (Bootloader)
 - [x] Memory Management
 - [x] FAT32/16/12 support (Kernel)
-
+- [x] VFS (basique);
 TODO:
-- [ ] VFS
-- [ ] EXT2 support
 - [ ] shell/Terminal
+- [ ] VFS (multi disk)
+- [ ] EXT2 support
+- [ ] VFS (multi file system)
 - [ ] text editor
 - [ ] assembleur
 - [ ] basic support

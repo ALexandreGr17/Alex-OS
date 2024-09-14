@@ -30,3 +30,13 @@ char* strchr(const char* str, char c){
 	return *str == 0 ? NULL : str;
 }
 
+uint8_t strcmp(const char* str1, const char* str2){
+	int i = 0;
+	for(i = 0; str1[i] && str2[i]; i++){
+		if(str1[i] != str2[i]){
+			return 0;
+		}
+	}
+
+	return !((str1[i] == 0) ^ (str2[i] == 0));
+}

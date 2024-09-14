@@ -25,6 +25,9 @@ void timer(Register* regs){
 	//printf(".");
 }
 
+
+void term();
+
 void __attribute__((section(".entry"))) start(boot_parameters_t* bootparams){
 	memset(&__bss_start, 0, (&__end) - (&__bss_start));
 	clrscr();
@@ -125,14 +128,28 @@ void __attribute__((section(".entry"))) start(boot_parameters_t* bootparams){
 	ata_read28(&atam0, 0, buffer_read, 11);
 	printf("\n%s\n", buffer_read);*/
 	
-	while (1) {
-		char c = 0;
-		uint32_t size = read(0, 1, &c);	
-		if(c != 0){
-			printf("%c\n", c);
-		}
-		c = 0;
-	}
+	term();
+	
 end:
 	for(;;);
+}
+
+void term(disk_t* disk){
+	for(;;){
+		printf("> ");
+		char buf[256] = {0};
+		read(STDIN, 256, &buf);
+		printf("you wrote: %s", buf);
+		if(strcmp(buf, "quit\n")){
+			printf("bye\n");
+			return;
+		}
+
+		if(strcmp(buf, "test\n")){
+			int handle = open("/test/azer.txt");
+			read(handle, 18, buf);
+			printf("%s", buf);
+			close(handle);
+		}
+	}
 }
