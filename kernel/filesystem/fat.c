@@ -641,3 +641,10 @@ uint8_t FAT_create_file(disk_t* disk, char* path){
 	
 	return 1;
 }
+
+void FAT_close(int handle){
+	if(handle == ROOT_DIR_HANDLE){
+		return;
+	}
+	opened_files[handle - 3].open = 0;
+}

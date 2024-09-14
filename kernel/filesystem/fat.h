@@ -17,4 +17,5 @@ void FAT_seek(disk_t* disk, int handle, uint32_t offset, uint8_t where);
 uint32_t FAT_read(disk_t* disk, int handle, uint32_t count, uint8_t* out);
 uint32_t FAT_write(disk_t* disk, int handle, uint32_t count, uint8_t* in);
 uint8_t FAT_create_file(disk_t* disk, char* path);
+void FAT_close(int handle);
 #endif

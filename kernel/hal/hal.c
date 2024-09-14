@@ -7,6 +7,7 @@
 #include <arch/i686/pci/pci.h>
 #include <arch/i686/fdc.h>
 #include <mem_management.h>
+#include <vfs/vfs.h>
 
 void HAL_Initialaize(){
 	i686_GDT_Initialize();

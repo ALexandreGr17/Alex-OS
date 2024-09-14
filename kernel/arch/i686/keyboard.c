@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <vfs/vfs.h>
 
 #define KEYBOARD_CONTROLLER_PORT	0x64
 #define KEYBOARD_PORT				0x60
@@ -55,6 +56,7 @@ void keyboard_handler_main(Register* regs){
 			if(c >= '0' && c <= '9' && !num_lock){
 				return;
 			}
+			write(0, 1, &c);
 			printf("%c", c);
 		}
 		else{

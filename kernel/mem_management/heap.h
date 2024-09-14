@@ -23,5 +23,6 @@ typedef struct {
 #define NULL 0
 
 heap_t* get_heap();
+void debug_heap();
 
 #endif

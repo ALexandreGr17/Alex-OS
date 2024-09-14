@@ -1,6 +1,7 @@
 #include "arch/i686/fdc.h"
 #include "disk.h"
 #include "errno.h"
+#include "mem_management/heap.h"
 #include "string/string.h"
 #include <stdint.h>
 #include <arch/i686/isr.h>
@@ -14,6 +15,7 @@
 #include <arch/i686/ata.h>
 #include <mem_management.h>
 #include <filesystem/fat.h>
+#include "vfs/vfs.h"
 
 extern uint8_t __bss_start;
 extern uint8_t __end;
@@ -79,6 +81,9 @@ void __attribute__((section(".entry"))) start(boot_parameters_t* bootparams){
 		.disk_write = &ata_write28
 	};
 
+	disk_t* disks = &disk;
+	vfs_init(&disks, 1);
+
 	if(!FAT_init(&disk)){
 		printf("FAT init failed errno: 0x%x\n", errno);
 		goto end;
@@ -99,6 +104,7 @@ void __attribute__((section(".entry"))) start(boot_parameters_t* bootparams){
 
 	FAT_create_file(&disk, "/test/azer.txt");
 	printf("------------------------------------------\n");
+
 	int handle = FAT_open(&disk, "test/azer.txt");
 	printf("%d\n", handle);
 	char* test = "Yo ca fonctionne\n";
@@ -116,6 +122,14 @@ void __attribute__((section(".entry"))) start(boot_parameters_t* bootparams){
 	ata_read28(&atam0, 0, buffer_read, 11);
 	printf("\n%s\n", buffer_read);*/
 	
+	while (1) {
+		char c = 0;
+		uint32_t size = read(0, 1, &c);	
+		if(c != 0){
+			printf("%c\n", c);
+		}
+		c = 0;
+	}
 end:
 	for(;;);
 }
