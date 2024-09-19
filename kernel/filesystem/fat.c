@@ -317,6 +317,7 @@ uint8_t update_fat(disk_t* disk, uint32_t current_cluster, uint32_t next_cluster
 void debug_entry(dir_entry_t* entry){
 	printf("######################################\n");
 	printf("entry:\n");
+	printf("	sizeof: 0x%x\n", sizeof(dir_entry_t));
 	printf("	filename: %s\n", entry->filename);
 	printf("	is_dir: %d\n", (entry->attributes & DIRECTORY) != 0);
 	printf("	size: %i\n", entry->size);
@@ -353,7 +354,7 @@ uint32_t FAT_read(disk_t* disk, int handle, uint32_t count, uint8_t* out){
 		uint16_t nb_to_read = MIN(count + offset, 512);
 		disk->disk_read(disk->disk, cluster_2_lba(file->current_cluster), 1, file->buffer);
 
-		memcpy(out, file->buffer + offset, nb_to_read);
+		memcpy(out, file->buffer + offset, nb_to_read - offset);
 		out += nb_to_read - offset;
 		nb_read = nb_to_read - offset;
 		file->position += nb_to_read - offset;
@@ -413,7 +414,7 @@ void FAT_seek(disk_t* disk, int handle, uint32_t offset, uint8_t where){
 					file->position += sizeof(dir_entry_t);
 				}
 				else {
-					if(file->buffer[i] == EOF){
+					if(file->buffer[i] == EOF || file->buffer[i] == 0){
 						file->size = file->position;
 						return;
 					}
@@ -437,6 +438,18 @@ void FAT_seek(disk_t* disk, int handle, uint32_t offset, uint8_t where){
 		file->current_cluster = next_cluster(disk, file->current_cluster);
 		offset -= MIN(offset, 512);
 	}
+}
+
+uint32_t FAT_tellpos(int handle){
+	if(handle == ROOT_DIR_HANDLE){
+		return 0;
+	}
+
+	file_t* file = &opened_files[handle - 3];
+	if(file->is_dir){
+		return 0;
+	}
+	return file->position;
 }
 
 uint32_t FAT_append(disk_t* disk, int handle, uint32_t count, uint8_t* in){
@@ -483,7 +496,6 @@ dir_entry_t* find_file(disk_t* disk, file_t* dir, char* filename){
 	memset(FAT_name, ' ', 11);
 	char* ext = strchr(filename, '.');
 
-
 	if(ext != NULL){
 		for(int i = 0; i < 11 && filename + i < ext; i++){
 			FAT_name[i] = toupper(filename[i]);
@@ -499,8 +511,9 @@ dir_entry_t* find_file(disk_t* disk, file_t* dir, char* filename){
 		}
 	}
 	dir_entry_t* entry = malloc(sizeof(dir_entry_t));
-	
+
 	do {
+
 		if(!read_next_entry(disk, dir, entry)){
 			errno = -2;
 			return NULL;
@@ -527,16 +540,18 @@ int find_free_handle(){
 
 int FAT_open(disk_t* disk, char* path){
 	if(path == NULL){
-		errno = -1;
+		errno = -3;
 		return 0;
 	}
-
 
 	file_t* dir = &root_dir;
 	dir->current_cluster = dir->first_cluster;
 	dir->position = 0;
 	if(*path == '/'){
 		path++;
+		if(*path == 0){
+			return root_dir.handle;
+		}
 	}
 
 	int handle = find_free_handle();
@@ -555,6 +570,7 @@ int FAT_open(disk_t* disk, char* path){
 		if(next_dir != NULL){
 			uint16_t size_name = next_dir - path;
 			path[size_name] = 0;
+			next_dir++;
 		}
 
 		if(!dir->is_dir){
@@ -569,7 +585,6 @@ int FAT_open(disk_t* disk, char* path){
 			return -1;
 		}
 
-		
 		file->first_cluster = entry->first_cluster_hi << 16 | entry->first_cluster_lo;
 		file->current_cluster = file->first_cluster;
 		file->is_dir = (entry->attributes & DIRECTORY) != 0;
@@ -578,10 +593,8 @@ int FAT_open(disk_t* disk, char* path){
 		file->handle = handle;
 		memcpy(file->filename, entry->filename, 11);
 		free(entry);
+
 		path = next_dir;
-		if(path != NULL){
-			path++;
-		}
 		next_dir = strchr(path, '/');
 		dir = file;
 		dir->handle = file->handle;
@@ -598,8 +611,12 @@ char* parse_filename_create_file(char* filename){
 			last_pos = i;
 		}
 	}
-	filename[last_pos] = 0;
-	return filename + last_pos + 1;
+	if(filename[last_pos] == '/'){
+		filename[last_pos] = 0;
+		return filename + last_pos + 1;
+	}
+
+	return filename;
 }
 
 void normal_to_fat_name(char* in, char* out){
@@ -627,13 +644,12 @@ uint8_t FAT_create_file(disk_t* disk, char* path){
 	errno = 0;
 	char* file_name = parse_filename_create_file(path);
 	int d_hd = FAT_open(disk, path);
-	FAT_seek(disk, d_hd, 0, SEEK_SET);
-
-
-	if(d_hd < 0){
+	/*if(d_hd < 0){
 		errno = -1;
 		return 0;
-	}
+	}*/
+
+	FAT_seek(disk, d_hd, 0, SEEK_SET);
 	
 	uint32_t new_cluster = find_free_cluster(disk);
 	update_fat(disk, new_cluster, 0xFFFFFFF8);
@@ -654,4 +670,33 @@ void FAT_close(int handle){
 		return;
 	}
 	opened_files[handle - 3].open = 0;
+}
+
+void FAT_list(disk_t* disk, int handle){
+	FAT_seek(disk, handle, 0, SEEK_SET);
+	file_t* file = handle == ROOT_DIR_HANDLE ? &root_dir : &opened_files[handle-3];
+	dir_entry_t* entry = malloc(sizeof(dir_entry_t));
+	do {
+		if(!read_next_entry(disk, file, entry)){
+			errno = -2;
+			return;
+		}
+		if(entry->filename[0] == 0){
+			break;
+		}
+
+		if(entry->attributes & VOLUME_ID){
+			continue;
+		}
+
+		char filename[12] = {0};
+		//debug_entry(entry);
+		printf("%s  %i,	%s\n", 
+				((entry->attributes & DIRECTORY) != 0? ' ' : 'd'), 
+				entry->size, 
+				entry->filename);
+
+	}while(entry->filename[0] != 0);
+	
+	free(entry);
 }

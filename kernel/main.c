@@ -76,6 +76,7 @@ void __attribute__((section(".entry"))) start(boot_parameters_t* bootparams){
 	//crash_me();
 	
 	printf("\n\n");
+
 	disk_ata_t atam0 = {.base_port = 0x1F0, .master = 1};
 	ata_init(&atam0, 1, bootparams->partition_location);
 	identify(&atam0);
@@ -95,22 +96,11 @@ void __attribute__((section(".entry"))) start(boot_parameters_t* bootparams){
 	}
 
 	printf("FAT init\n");
-	/*int handle = FAT_open(&disk, "/test/test.txt");
-	if(handle < 0){
-		goto end;
-	}
-	char buffer[32] = {0};
-	printf("%d\n", handle);
-	int i = 0;
-	if((i = FAT_read(&disk, handle, 31, buffer)) != 31){
-		printf("ERROR ----------------------> %d\n", i);
-	}
-	printf("%s\n", buffer);*/
 
 	FAT_create_file(&disk, "/test/azer.txt");
 	printf("------------------------------------------\n");
 
-	int handle = FAT_open(&disk, "/test/azer.txt");
+	int handle = FAT_open(&disk, "test/azer.txt");
 
 	printf("%d\n", handle);
 	char* test = "Yo ca fonctionne\n";
@@ -119,6 +109,7 @@ void __attribute__((section(".entry"))) start(boot_parameters_t* bootparams){
 	FAT_seek(&disk, handle, 0, SEEK_SET);
 	FAT_read(&disk, handle, strlen(test), test);
 	printf("%s\n", test);
+	close(handle);
 
 /*
 	char* buffer = "Hello world";
@@ -134,22 +125,111 @@ end:
 	for(;;);
 }
 
+// TODO:
+//		parse line
+//		cat
+//		ls
+//		touch
+//		mkdir
+
+char* builtin[] = {
+	"help",
+	"cat",
+	"quit",
+	"test",
+	"ls",
+	"touch",
+	"mkdir"
+};
+
+void exec_cmdline(char* line){
+	char* old = line;
+	for(int i = 0; line[i] && line[i] != '\n'; i++){
+		if(line[i] == ' '){
+			line[i] = 0;
+
+		}
+	}
+}
+
+void trim(char* buffer){
+	for(int i = 0; buffer[i]; i++){
+		if(buffer[i] == '\n'){
+			buffer[i] = 0;
+			return;
+		}
+	}
+}
+
 void term(disk_t* disk){
 	for(;;){
 		printf("> ");
-		char buf[256] = {0};
-		read(STDIN, 256, &buf);
-		printf("you wrote: %s", buf);
-		if(strcmp(buf, "quit\n")){
+		char* buffer = NULL;
+		
+		uint32_t size = 0;
+		read_line(STDIN, &size, &buffer);
+		trim(buffer);
+		char* args = strchr(buffer, ' ');
+		buffer[args - buffer] = 0;
+		args++;
+		//printf("you wrote: %s\n", buffer);
+		if(strcmp(buffer, "quit")){
 			printf("bye\n");
 			return;
 		}
 
-		if(strcmp(buf, "test\n")){
-			int handle = open("/test/azer.txt");
-			read(handle, 18, buf);
-			printf("%s", buf);
+		if(strcmp(buffer, "ls")){
+			int handle = open(args, 0);
+			list(handle);
+		}
+
+		if(strcmp(buffer, "cat")){
+			int handle = open(args, 0);
+			if(handle == -1){
+				printf("aie\n");
+				continue;
+			}
+			seek(handle, 0, SEEK_END);
+			uint32_t size = tellpos(handle);
+			seek(handle, 0, SEEK_SET);
+			char* test = calloc(size, 0);
+			read(handle, size, test);
+			printf("%s", test);
+			free(test);
 			close(handle);
 		}
+
+		if(strcmp(buffer, "touch")){
+			int handle = open(args, 1);
+			if(handle < 0){
+				printf("Failed\n");
+				continue;
+			}
+			printf("new file %s created \n", args);
+		}
+
+		if(strcmp(buffer, "write")){
+			char* filename = args;
+			char* data = strchr(args, ' ');
+			filename[data - filename] = 0;
+			data++;
+			int handle = open(filename, 0);
+			if(handle < 0){
+				printf("no such file %s\n", filename);
+				continue;
+			}
+			write(handle, strlen(data), data);
+		}
+
+		if(strcmp(buffer, "help")){
+			printf("Voici les commandes possible:\n\tls <path>: list les fichier et dossier dans le dossier <path>\n\tcat <file>: lis le fichier path\n\ttouch <file>: creer le fichier file\n\twrite <file> <data>: ecris data dans le fichier file\n\tclear: clear l'ecran\n");
+		}
+
+		if(strcmp(buffer, "clear")){
+			clrscr();
+		}
+
+		free(buffer);
 	}
 }
+

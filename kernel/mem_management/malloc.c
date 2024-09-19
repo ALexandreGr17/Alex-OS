@@ -18,7 +18,6 @@ uint64_t align(uint64_t size){
 memory_header_t* expand(uint64_t size){
 	heap_t* heap = get_heap();
 	void* next_addr = heap->block_strart + heap->used_size;
-	
 	if(next_addr + size  > heap->block_strart + heap->block_size){
 		printf("expend fail 1\n");
 		printf("next_addr: 0x%lx, size: 0x%x, block_start: 0x%lx, blocksize: 0x%x\n", 
@@ -44,8 +43,9 @@ void* malloc(uint64_t size){
 	uint64_t align_size = align(size);
 	memory_header_t* header = heap->first_header;
 	while(header != NULL){
-		if(header->free && header->size <= align_size){
+		if(header->free && (header->size >= align_size)){
 			header->used_size = size;
+			header->free = 0;
 			return get_data_block(header);
 		}
 		header = header->next;
@@ -73,8 +73,8 @@ void debug_header(void* ptr){
 	if(header == NULL){
 		return;
 	}
-	printf("0x%x\n", sizeof(memory_header_t));
 	printf("\n-------------------\nHEADER:\n");
+	printf("size of header: 0x%x\n", sizeof(memory_header_t));
 	printf("Start: 0x%lx\n", header);
 	printf("Data Start: 0x%lx\n", header + 0x1);
 	printf("size: 0x%lx\n", header->size);
@@ -87,4 +87,18 @@ void debug_header(void* ptr){
 void free(void* ptr){
 	memory_header_t* mem_header = get_header(ptr);
 	mem_header->free = 1;
+}
+
+void* realloc(void* ptr, uint64_t size){
+	memory_header_t* hdr = get_header(ptr);
+	if(hdr->size > size){
+		hdr->used_size = size;
+		return ptr;
+	}
+	void* new_ptr = malloc(size);
+	for(int i = 0; i < hdr->used_size; i++){
+		((uint8_t*)new_ptr)[i] = ((uint8_t*)ptr)[i];
+	}
+	free(ptr);
+	return new_ptr;
 }

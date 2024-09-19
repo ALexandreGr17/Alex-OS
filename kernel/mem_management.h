@@ -9,6 +9,7 @@
 void init_memory_management(memory_info_t* mem_info);
 void* malloc(uint64_t size);
 void* calloc(uint64_t size, uint8_t val);
+void* realloc(void* ptr, uint64_t size);
 void free(void* ptr);
 
 void debug_heap();
