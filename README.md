@@ -15,9 +15,10 @@ DONE:
 - [x] FAT32/16 support (Bootloader)
 - [x] Memory Management
 - [x] FAT32/16/12 support (Kernel)
-- [x] VFS (basique);
+- [x] VFS (basique)
+- [x] Terminal
 TODO:
-- [ ] shell/Terminal
+- [ ] shell
 - [ ] ELF support
 - [ ] exec
 - [ ] fork
