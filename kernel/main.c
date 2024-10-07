@@ -16,6 +16,7 @@
 #include <mem_management.h>
 #include <filesystem/fat.h>
 #include "vfs/vfs.h"
+#include <arch/i686/acpi.h>
 
 extern uint8_t __bss_start;
 extern uint8_t __end;
@@ -43,8 +44,8 @@ void __attribute__((section(".entry"))) start(boot_parameters_t* bootparams){
 
 	init_memory_management(&bootparams->Memory);
 	HAL_Initialaize();
-	debug_heap();
-	
+	//debug_heap();
+	/*
 	for(int i = 0; i < 16; i++){
 		if(i != 1 && i != 6){
 			i686_IRQ_RegisterHandler(i, timer);
@@ -57,7 +58,7 @@ void __attribute__((section(".entry"))) start(boot_parameters_t* bootparams){
 
 	print_all_pci_devices();
 	uint16_t pci_ds[2048];
-	uint16_t nb_found = pci_get_device_by_class(0x3, pci_ds);
+	uint16_t nb_found = pci_get_device_by_class(0x1, pci_ds);
 	if(nb_found == 0){
 		printf("NO DISK\n");
 		goto end;
@@ -65,12 +66,12 @@ void __attribute__((section(".entry"))) start(boot_parameters_t* bootparams){
 
 	printf("location: 0x%lx\n", bootparams->partition_location);
 
-	/*
+	
 	uint16_t size;
 	pci_bar_t* bars = pci_get_port_info(pci_ds[0], &size);
 	for(int i = 0; i < size; i++){
 		printf("DISK: port: 0x%x, type: 0x%x\n", bars[i].addr._16, bars[i].type);
-	}*/
+	}
 
 
 	//crash_me();
@@ -95,8 +96,8 @@ void __attribute__((section(".entry"))) start(boot_parameters_t* bootparams){
 		goto end;
 	}
 
-	printf("FAT init\n");
-
+	printf("FAT init\n");*/
+/*
 	FAT_create_file(&disk, "/test/azer.txt");
 	printf("------------------------------------------\n");
 
@@ -109,7 +110,7 @@ void __attribute__((section(".entry"))) start(boot_parameters_t* bootparams){
 	FAT_seek(&disk, handle, 0, SEEK_SET);
 	FAT_read(&disk, handle, strlen(test), test);
 	printf("%s\n", test);
-	close(handle);
+	close(handle);*/
 
 /*
 	char* buffer = "Hello world";
@@ -119,6 +120,8 @@ void __attribute__((section(".entry"))) start(boot_parameters_t* bootparams){
 	ata_read28(&atam0, 0, buffer_read, 11);
 	printf("\n%s\n", buffer_read);*/
 	
+#include <arch/i686/usb.h>
+	USB_init();
 	term();
 	
 end:
@@ -175,7 +178,12 @@ void term(disk_t* disk){
 		//printf("you wrote: %s\n", buffer);
 		if(strcmp(buffer, "quit")){
 			printf("bye\n");
+			ACPI_poweroff();
 			return;
+		}
+
+		if(strcmp(buffer, "ping")){
+			printf("pong\n");
 		}
 
 		if(strcmp(buffer, "ls")){

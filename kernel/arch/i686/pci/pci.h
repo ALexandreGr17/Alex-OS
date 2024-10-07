@@ -27,9 +27,10 @@ typedef struct {
 
 
 
-void pci_scan();
+void PCI_scan();
 void print_all_pci_devices();
 uint16_t pci_get_device_by_class(uint8_t class, uint16_t* data_out);
 pci_bar_t* pci_get_port_info(uint16_t pci_d, uint16_t* size);
+void pci_get_device_info(uint16_t pci_d, uint8_t* out);
 
 #endif

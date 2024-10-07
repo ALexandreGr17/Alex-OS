@@ -65,7 +65,7 @@ clean:
 	$(RM) -rf $(BUILD_DIR)
 
 run_disk: $(BUILD_DIR)/main_disk.raw
-	qemu-system-x86_64 -debugcon stdio -hda $<
+	sudo qemu-system-x86_64 -device qemu-xhci -debugcon stdio -hda $<
 
 run: $(BUILD_DIR)/main_floppy.img
 	qemu-system-x86_64 -debugcon stdio -fda $< -hda ./disk_image_master.img
@@ -74,9 +74,10 @@ debug:
 	bochs -f bochs_config
 
 debug_disk: $(BUILD_DIR)/main_disk.raw
+	sudo qemu-system-x86_64 -device qemu-xhci -monitor stdio -hda $<
 	#bochs -f ./bochs_config_disk
-	qemu-system-i386 -hda $< -S -s &
-	gdb -nx -ix ./gdb_init_real_mode.txt \
+#	qemu-system-i386 -hda $< -S -s &
+#	gdb -nx -ix ./gdb_init_real_mode.txt \
 		-ex "target remote localhost:1234"\
 		-ex "break *0x7c00" \
 		-ex "continue"

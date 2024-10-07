@@ -8,6 +8,7 @@
 #include <arch/i686/fdc.h>
 #include <mem_management.h>
 #include <vfs/vfs.h>
+#include <arch/i686/acpi.h>
 
 void HAL_Initialaize(){
 	i686_GDT_Initialize();
@@ -15,6 +16,7 @@ void HAL_Initialaize(){
 	i686_ISR_Initialize();
 	i686_IRQ_Initialize();
 	i686_Keyboard_init();
+	acpi_init();
 	//fdc_init();
-	pci_scan();
+	PCI_scan();
 }
