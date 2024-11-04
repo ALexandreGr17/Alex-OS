@@ -1,6 +1,15 @@
 #include "./rsdp.h"
 #include "memory/memory.h"
 #include <stdint.h>
+#include <stdio.h>
+
+struct RSDP_s {
+	char Signature[8];
+	uint8_t Checksum;
+	char OEMID[6];
+	uint8_t Revision;
+	uint32_t RsdtAddress;
+} __attribute__ ((packed));
 
 uint8_t check_RDSP(void* addr){
 	char* sig = "RSD PTR ";
@@ -11,7 +20,7 @@ uint8_t check_RDSP(void* addr){
 
 	if(memcmp(rdsp->signature, sig, 8)){		// check the signature
 		// calculate the checksum
-		for(int i = 0; i < sizeof(RSDP_t); i++){
+		for(int i = 0; i < 20; i++){
 			check += *addr_8b;
 			addr_8b++;
 		}

@@ -17,6 +17,6 @@ void HAL_Initialaize(){
 	i686_IRQ_Initialize();
 	i686_Keyboard_init();
 	acpi_init();
+	PCI_init();
 	//fdc_init();
-	PCI_scan();
 }

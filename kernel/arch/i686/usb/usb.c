@@ -12,7 +12,7 @@ enum USB_CONTROLLER_TYPE {
 	DEVICE = 0xFE,
 	UNKNOW = 0x80,
 };
-
+/*
 void USB_init_xhci_controller(uint16_t id){
 	uint16_t size = 0;
 	pci_bar_t* bar = pci_get_port_info(id, &size);
@@ -43,4 +43,4 @@ void USB_scan_controller(){
 
 void USB_init(){
 	USB_scan_controller();
-}
+}*/

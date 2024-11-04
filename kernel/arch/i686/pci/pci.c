@@ -1,4 +1,5 @@
 #include "arch/i686/io.h"
+#include <arch/i686/acpi.h>
 #include <arch/i686/pci/pci.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -7,6 +8,8 @@
 #define PCI_COMMAND_PORT	0xCF8
 
 #define MAX_PCI_DEVICE 8 * 32 * 8
+
+#define REG(x) x * sizeof(uint32_t)
 
 // Read command
 // 31	 -> Enable read
@@ -17,255 +20,198 @@
 // 7-2   -> offset
 // 1-0   -> should be 0
 
-hardware_pci_device_t devices[MAX_PCI_DEVICE];
-uint16_t nb_pci_device = 0;
+enum BAR_TYPE {
+	BAR_TYPE_IO,
+	BAR_TYPE_MMIO,
+};
 
-typedef enum {
-	BAR_SIZE_16 = 1,
-	BAR_SIZE_32 = 0,
-	BAR_SIZE_64 = 2,
-}BAR_SIZE;
+enum BAR_SIZE {
+	BAR_SIZE_16,
+	BAR_SIZE_32,
+	BAR_SIZE_64,
+};
 
-typedef enum {
-	BAR_TYPE_MEM = 0,
-	BAR_TYPE_IO = 1,
-} BAR_TYPE;
+typedef struct {
+	enum BAR_TYPE type;
+	enum BAR_SIZE size;
+	uint64_t addr;
+} PCI_bar_t;
 
-typedef enum {
-	PCI_DEVICE_HEADER_TYPE_GENERAL = 0,
-	PCI_DEVICE_HEADER_TYPE_PCI_2_PCI_BRIDGE = 0x80,
-	PCI_DEVICE_HEADER_TYPE_PCI_2_CARDBUS_BRIDGE = 2,
-} PCI_DEVICE_HEADER_TYPE;
+typedef struct {
+	uint8_t bus;
+	uint8_t slot;
+	uint8_t func;
+	uint8_t subclass;
+	uint8_t prog_if;
+	uint8_t int_pin;
+	uint8_t int_line;
+	PCI_bar_t bars[6];
 
-uint16_t PCI_controller_read_word(uint8_t bus, uint8_t slot, uint8_t func, uint8_t offset){
+	uint16_t vendor_id;
+	uint16_t device_id;
+	uint8_t  class_code;
+} PCI_device_t;
+
+PCI_device_t devices[8 * 32 * 8];
+int nb_device = 0;
+
+uint32_t PCI_controller_read(PCI_device_t* dev, uint8_t offset, uint8_t size) {
 	uint32_t address;
-	uint32_t lbus = bus;
-	uint32_t lslot = slot;
-	uint32_t lfunc = func;
+	uint32_t lbus = dev->bus;
+	uint32_t lslot = dev->slot;
+	uint32_t lfunc = dev->func;
 
-	address = (uint32_t)((lbus << 16) | (lslot << 11) | (lfunc << 8) | (offset & 0xFC) | ((uint32_t)1 << 31));
+	address = (uint32_t)((lbus << 16) | 
+			(lslot << 11) | 
+			(lfunc << 8) | 
+			(offset & 0xFC) | 
+			((uint32_t)1 << 31));
 
 	i686_outl(PCI_COMMAND_PORT, address);
-
-	return (uint16_t)((i686_inl(PCI_DATA_PORT) >> ((offset & 2) * 8))  & 0xFFFF);
-}
-
-void PCI_controller_write(uint8_t bus, uint8_t slot, uint8_t func, uint8_t offset, uint32_t value){
-	uint32_t address;
-
-	address = (uint32_t)(bus << 16) | (slot << 11) | (func << 8) | (offset & 0xFC) | ((uint32_t)0x80000000);
-
-	i686_outl(PCI_COMMAND_PORT, address);
-	i686_outl(PCI_DATA_PORT, value);
-}
-
-uint32_t PCI_controller_read_long(uint8_t bus, uint8_t slot, uint8_t func, uint8_t offset){
-	uint32_t address;
-	uint32_t lbus = bus;
-	uint32_t lslot = slot;
-	uint32_t lfunc = func;
-
-	address = (uint32_t)((lbus << 16) | (lslot << 11) | (lfunc << 8) | (offset & 0xFC) | ((uint32_t)1 << 31));
-
-	i686_outl(PCI_COMMAND_PORT, address);
-
-	return (uint16_t)((i686_inl(PCI_DATA_PORT) >> ((offset & 2) * 8))  & 0xFFFF);
-}
-
-uint8_t device_has_multiple_function(uint16_t bus, uint16_t device){
-	return PCI_controller_read_word(bus, device, 0, 0x0E) & (1<<7);
-}
-
-void print_device(hardware_pci_device_t* device){
-	printf("PCI Device: \nvendor_id: 0x%x, device_id: 0x%x, class: 0x%x, subclass: 0x%x, prog_if: 0x%x\n",
-			device->vendor_id, device->device_id, device->class_code, device->subclass, device->prog_if);
-}
-
-uint8_t get_highest_bit_set(uint32_t val){
-	uint8_t pos = 31;
-	uint32_t mask = 0x80000000;
-	while(!(val & mask)){
-		pos--;
-		mask = mask >> 1;
-	}
-	return pos;
-}
-
-uint8_t get_lowest_bit_set(uint32_t val){
-	uint8_t pos = 0;
-	uint32_t mask = 1;
-	while(!(val & mask)){
-		pos++;
-		mask = mask << 1;
-	}
-	return pos;
-}
-
-uint8_t handle_32_bit_bar_mem(uint8_t bus, uint8_t slot, uint8_t func, uint8_t offset, hardware_pci_device_t* device){
-	if(device->class_code == 0x3){
-		printf("offset: 0x%x\n", offset);
-		printf("bus: 0x%x\n", bus);
-		printf("slot: 0x%x\n", slot);
-		printf("func: 0x%x\n", func);
-	}
-
-	device->command = PCI_controller_read_word(bus, slot, func, 0x4);
-	if((device->command & 0x2) == 0){
-		printf("Enable memory space\n");
-		PCI_controller_write(bus, slot, func, 0x4, device->command | 0x2);
-	}
-
-	uint32_t original_bar_value = PCI_controller_read_word(bus, slot, func, offset);
-	printf("Original BAR value: 0x%x\n", original_bar_value);
-	if(original_bar_value == 0){
-		device->status = PCI_controller_read_word(bus, slot, func, 0x6);
-		printf("status: 0x%x\n", device->status);
-		printf("INFO: BAR is not implemented or unused\n");
-		return 1;
-	}
-
-	PCI_controller_write(bus, slot, func, offset, 0xFFFFFFF0);
-	const uint32_t bar_value = PCI_controller_read_word(bus, slot, func, offset) & 0xFFFFFFF0;
-
-	printf("BAR value after masking: 0x%x\n", bar_value);
-
-	if(bar_value == 0){
-		device->status = PCI_controller_read_word(bus, slot, func, 0x6);
-		printf("status: 0x%x\n", device->status);
-		printf("ERROR: 32-bit memory BAR has no writable address bits!\n");
-		return 0;
-	}
-
-	uint32_t size = (~bar_value & 0xFFFFFFF0) + 1;
-	if ((size & (size - 1)) != 0) {
-		device->status = PCI_controller_read_word(bus, slot, func, 0x6);
-		printf("status: 0x%x\n", device->status);
-		printf("ERROR: BAR size is not a power of two!\n");
-		return 0;
-	}
-	PCI_controller_write(bus, slot, func, offset, original_bar_value);
-	printf("32-bit memory BAR size: 0x%x bytes.\n", size);
-	return 1;
-}
-
-
-void PCI_set_bar_mem(uint8_t bus, uint8_t slot, uint8_t func, uint8_t offset, hardware_pci_device_t* device){
-
-	device->command = PCI_controller_read_word(bus, slot, func, 0x4);
-    if ((device->command & 0x2) == 0) {
-        printf("Enable memory space\n");
-        PCI_controller_write(bus, slot, func, 0x4, device->command | 0x2);
-    }
-	uint32_t bar_value = PCI_controller_read_long(bus, slot, func, offset);
-	printf("bar_value: 0x%x\n", bar_value);
-	switch (bar_value & 0x00000006) {
-		case 0:
-			// 32 Bits
-			printf("bar type: 32\n");
-			PCI_controller_write(bus, slot, func, offset, 0xFFFFFFF0);
-			uint32_t size = PCI_controller_read_long(bus, slot, func, offset) & 0xFFFFFFF0;
-			if(size == 0){
-				printf("No writable address bits\n");
-				break;
-			}
-			printf("bar size: 0x%x\n", size);
-			break;
+	uint32_t val = i686_inl(PCI_DATA_PORT) >> (offset & 0x3) * 8;
+	switch (size) {
+		case 1:
+			return (uint8_t)val;
+		case 2:
+			return (uint16_t)val;
 		case 4:
-			printf("bar type: 64\n");
-			// 64 Bits
+			return (uint32_t)val;
+		default:
+			return 0;
+	}
+}
+
+void PCI_controller_write(PCI_device_t* dev, uint8_t offset, uint32_t value, uint8_t size){
+	uint32_t address;
+	uint32_t lbus = dev->bus;
+	uint32_t lslot = dev->slot;
+	uint32_t lfunc = dev->func;
+
+	address = (uint32_t)((lbus << 16) | 
+			(lslot << 11) | 
+			(lfunc << 8) | 
+			(offset & 0xFC) | 
+			((uint32_t)1 << 31));
+
+	i686_outl(PCI_COMMAND_PORT, address);
+	uint32_t oldval = i686_inl(PCI_DATA_PORT);
+	uint32_t mask;
+
+	switch (size) {
+		case 1:
+			mask = 0xFF;
 			break;
 		case 2:
-			printf("bar type: 20\n");
-			// 20 Bits
+			mask = 0xFFFF;
+			break;
+		case 4:
+			mask = 0xFFFFFFFF;
 			break;
 	}
-		
+	int bitoffset = (offset & 3) * 8;
+	value = (value & mask) << bitoffset;
+	oldval &= ~(mask << bitoffset);
+	oldval |= value;
+
+	i686_outl(PCI_COMMAND_PORT, address);
+	i686_outl(PCI_COMMAND_PORT, oldval);
 }
 
-void PCI_get_bar(uint8_t bus, uint8_t slot, uint8_t func, hardware_pci_device_t* device){
-	for(int i = 0; i < device->nb_bar; i++){
-		printf("	---------------------- bar --------------------\n");
-		uint32_t bar_value = PCI_controller_read_long(bus, slot, func, 0x10 + (i * 4));
-		printf("bar_value: 0x%x\n", bar_value);
-		if((bar_value & 1) == BAR_TYPE_IO){
-			//PCI_set_bar_io();
+enum READ_SIZE {
+	BYTE = 1,
+	WORD = 2,
+	DWORD = 4,
+};
+
+void get_bar(PCI_device_t *dev) {
+	for(int i = 0; i < 6; i++){
+		uint8_t offset = 0x10 + i * sizeof(uint32_t); 
+		uint32_t base_low = PCI_controller_read(dev, offset, DWORD);
+		PCI_controller_write(dev, offset, ~0, DWORD);
+		uint32_t size_low = PCI_controller_read(dev, offset, DWORD);
+		PCI_controller_write(dev, offset, base_low, DWORD);
+
+		if(base_low & 1){
+			// IO mode
+			dev->bars[i].type = BAR_TYPE_IO;
+			dev->bars[i].addr = base_low & ~0b11;
+			dev->bars[i].size = ~(size_low & ~0b11) + 1;
 		}
-		else {
-			if(bar_value != 0){
-				PCI_set_bar_mem(bus, slot, func, 0x10 + (i * 4), device);
+		else{
+			// MMIO mode
+			int type = (base_low >> 1) & 3;
+			uint32_t base_high = PCI_controller_read(dev, offset + 4, DWORD);
+			dev->bars[i].addr = base_low & ~0xF;
+			if (type == 2){
+				// 64 bit
+				dev->bars[i].addr |= ((uint64_t)base_high << 32);
+				i++;
 			}
+			dev->bars[i].size = ~(size_low & 0b1111) + 1;
+			dev->bars[i].type = BAR_TYPE_MMIO;
 		}
-
-		printf("\n\n");
-		PCI_controller_write(bus, slot, func, 0x10 + (i * 4), bar_value);
 	}
 }
 
-void PCI_fill_func(uint8_t bus, uint8_t device, uint8_t header_type){
-	if(header_type != PCI_DEVICE_HEADER_TYPE_GENERAL){
-		return;
-	}
-
-	for(int func = 0; func < 8; func++){
-		uint16_t vendor_id = PCI_controller_read_word(bus, device, func, 0);
-		if(vendor_id == 0xFFFF){
-			continue;
+void print_device(PCI_device_t* dev){
+	printf("PCI Device:\n");
+	printf("bus: %i, slot: %i, func: %i\n", dev->bus, dev->slot, dev->func);
+	printf("vendor_id: 0x%x, device_id: 0x%x\n", dev->vendor_id, dev->device_id);
+	printf("class_code: 0x%x, subclass: 0x%x, prog_if: 0x%x\n", dev->class_code, dev->subclass, dev->prog_if);
+	printf("int_pin: %i, int_line: %i\n", dev->int_pin, dev->int_line);
+	printf("BARS:\n");
+	for(int i = 0; i < 6; i++){
+		if (dev->bars[i].addr != 0)
+		{
+			printf("\tbar %i: type %d, base 0x%lx\n", i, dev->bars[i].type, dev->bars[i].addr);
 		}
-
-		printf("-------------------------- %i\n", nb_pci_device);
-		devices[nb_pci_device].vendor_id = vendor_id;
-		devices[nb_pci_device].device_id = PCI_controller_read_word(bus, device, func, 0x2);
-		devices[nb_pci_device].command = PCI_controller_read_word(bus, device, func, 0x4);
-		devices[nb_pci_device].status = PCI_controller_read_word(bus, device, func, 0x6);
-		devices[nb_pci_device].prog_if = PCI_controller_read_word(bus, device, func, 0x9) >> 8;
-		devices[nb_pci_device].subclass = PCI_controller_read_word(bus, device, func, 0xA) & 0xFF;
-		devices[nb_pci_device].class_code = PCI_controller_read_word(bus, device, func, 0xB) >> 8;
-		devices[nb_pci_device].nb_bar = 6;
-		print_device(&devices[nb_pci_device]);
-		PCI_get_bar(bus, device, func, &devices[nb_pci_device]);
-		nb_pci_device++;
 	}
+	printf("\n");
 }
 
-void PCI_scan(){
-	printf("\nPCI device:\n");
+void scan_bus(uint8_t bus){
+	for (int i = 0; i < 32; i++){
+		for (int j = 0; j < 8; j++) {
+			devices[nb_device].bus = bus;
+			devices[nb_device].slot = i;
+			devices[nb_device].func = j;
 
-	for(int bus = 0; bus < 256; bus++){
-		for(int device = 0; device < 32; device++){
-			uint16_t vendor_id = PCI_controller_read_word(bus, device, 0, 0);
-			if(vendor_id == 0xFFFF){
+			if (PCI_controller_read(&devices[nb_device], 0, WORD) == 0xFFFF){
 				continue;
 			}
-			uint8_t header_type = PCI_controller_read_word(bus, device, 0, 0xE) & 0xFF;
-			PCI_fill_func(bus, device, header_type);
+
+			if (PCI_controller_read(&devices[nb_device], 0xC, DWORD) & 0x800000){
+				continue;
+			}
+
+			devices[nb_device].vendor_id = PCI_controller_read(&devices[nb_device], REG(0), WORD);
+			devices[nb_device].device_id = PCI_controller_read(&devices[nb_device], REG(0), DWORD) >> 16;
+			devices[nb_device].class_code = PCI_controller_read(&devices[nb_device], REG(2), DWORD) >> 24;
+			devices[nb_device].subclass = PCI_controller_read(&devices[nb_device], REG(2), DWORD) >> 16;
+			devices[nb_device].prog_if = PCI_controller_read(&devices[nb_device], REG(2), DWORD) >> 8;
+			devices[nb_device].int_line = PCI_controller_read(&devices[nb_device], REG(0xF), DWORD);
+			devices[nb_device].int_pin = PCI_controller_read(&devices[nb_device], REG(0xF), DWORD) >> 8;
+			get_bar(&devices[nb_device]);
+			//print_device(&devices[nb_device]);
+			nb_device++;
+		}
+		
+	}
+}
+
+void scan_root_bus(void) {
+	PCI_device_t dev = { 0 };
+	if (PCI_controller_read(&dev, 0xC, DWORD) & 0x800000){
+		// if MF bit in header type set then only 1 bus
+		scan_bus(0);
+	}
+	else {
+		for (int i = 0; i < 8; i++) {
+			scan_bus(i);
 		}
 	}
 }
 
-void print_all_pci_devices(){
-	for(int i = 0; i < nb_pci_device; i++){
-		print_device(&devices[i]);
-	}
-}
-
-uint16_t pci_get_device_by_class(uint8_t class, uint16_t* data_out){
-	uint16_t size = 0;
-	for(int i = 0; i < nb_pci_device; i++){
-		if(devices[i].class_code == class){
-			data_out[size] = i;
-			size++;
-		}
-	}
-	return size;
-}
-
-void pci_get_device_info(uint16_t pci_d, uint8_t* out){
-	out[0] = devices[pci_d].class_code;
-	out[1] = devices[pci_d].subclass;
-	out[2] = devices[pci_d].prog_if;
-}
-
-pci_bar_t* pci_get_port_info(uint16_t pci_d, uint16_t* size){
-	*size = devices[pci_d].nb_bar;
-	return devices[pci_d].bar;
+void PCI_init(){
+	scan_root_bus();
 }
