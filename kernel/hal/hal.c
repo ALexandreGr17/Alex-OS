@@ -6,6 +6,7 @@
 #include <arch/i686/keyboard.h>
 #include <arch/i686/pci/pci.h>
 #include <arch/i686/fdc.h>
+#include <arch/i686/usb.h>
 #include <mem_management.h>
 #include <vfs/vfs.h>
 #include <arch/i686/acpi.h>
@@ -18,5 +19,6 @@ void HAL_Initialaize(){
 	i686_Keyboard_init();
 	acpi_init();
 	PCI_init();
+	USB_init();
 	//fdc_init();
 }

@@ -12,35 +12,72 @@ enum USB_CONTROLLER_TYPE {
 	DEVICE = 0xFE,
 	UNKNOW = 0x80,
 };
-/*
-void USB_init_xhci_controller(uint16_t id){
-	uint16_t size = 0;
-	pci_bar_t* bar = pci_get_port_info(id, &size);
-	printf("USB nb bar: %i\n", size);
-	for (int i = 0; i < size; i++) {
-		printf("\tUSB: mode : 0x%x, addr: 0x%x\n", bar[i].type, bar[i].addr);
-	}
-}
 
-void USB_scan_controller(){
-	uint16_t controller_id[MAX_CONTROLLER] = {0};
-	uint16_t size = pci_get_device_by_class(0xc, controller_id);
-	for(int i = 0; i < size; i++){
-		uint8_t info[3] = {0};
-		pci_get_device_info(controller_id[i], info);
-		if(info[1] == 0x3){
-			switch (info[2]) {
-				case XHCI:
-					USB_init_xhci_controller(i);
-					break;
+enum XHCI_OP_REG_OFF {
+	CAPLENGTH	= 0,
+	RSVD		= 1,
+	HCIVERSION	= 2,
+	HCSPARAMS1	= 4,
+	HCSPARAMS2  = 8,
+	HCSPARAMS3  = 0xC,
+	HCCPARAMS1  = 0x10,
+	DBOFF		= 0x14,
+	RTSOFF		= 0x18,
+	HCCPARMS2	= 0x1C
+};
 
-				default:
-					break;
-			}
+void XHCI_init(PCI_device_t *xhci_device){
+	uint8_t *bar = 0;
+	for (int i = 0; i < 6; i++){
+		if (xhci_device->bars[i].addr != 0){
+			bar = (uint8_t*)xhci_device->bars[i].addr;
+			break;
 		}
 	}
+	printf("CAPLENTH: 0x%x", *((uint8_t*)bar + CAPLENGTH));
 }
 
 void USB_init(){
-	USB_scan_controller();
-}*/
+	PCI_device_t filter = {
+		.class_code = SERIAL_BUS_CONTROLLER,
+		.subclass = 0x3,
+	};
+	char mask = CLASS_CODE | SUBCLASS;
+	int devices_id[10] = { 0 };
+	int nb_found = PCI_get_device_by_filter(&filter, mask, devices_id, 10);
+	if (nb_found == 0) {
+		printf("USB: No controller cound\n");
+	}
+	else {
+		printf("USB: %i contoller found\n", nb_found);
+	}
+	for (int i = 0; i < nb_found; i++)
+	{
+		PCI_device_t *device = PCI_get_device_by_id(devices_id[i]);
+		printf("Controller 1: ");
+		switch (device->prog_if) {
+			case 0:
+				printf("UHCI\n");
+				break;
+			case 0x10:
+				printf("OHCI\n");
+				break;
+			case 0x20:
+				printf("EHCI\n");
+				break;
+			case 0x30:
+				printf("XHCI\n");
+				XHCI_init(device);
+				break;
+			case 0x80:
+				printf("Unspecified\n");
+				break;
+			case 0xFE:
+				printf("USB device\n");
+				break;
+			default:
+				printf("unknow\n");
+				break;
+		}
+	}
+}

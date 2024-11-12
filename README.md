@@ -17,6 +17,7 @@ DONE:
 - [x] FAT32/16/12 support (Kernel)
 - [x] VFS (basique)
 - [x] Terminal
+
 TODO:
 - [ ] shell
 - [ ] ELF support

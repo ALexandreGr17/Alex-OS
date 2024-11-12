@@ -20,38 +20,6 @@
 // 7-2   -> offset
 // 1-0   -> should be 0
 
-enum BAR_TYPE {
-	BAR_TYPE_IO,
-	BAR_TYPE_MMIO,
-};
-
-enum BAR_SIZE {
-	BAR_SIZE_16,
-	BAR_SIZE_32,
-	BAR_SIZE_64,
-};
-
-typedef struct {
-	enum BAR_TYPE type;
-	enum BAR_SIZE size;
-	uint64_t addr;
-} PCI_bar_t;
-
-typedef struct {
-	uint8_t bus;
-	uint8_t slot;
-	uint8_t func;
-	uint8_t subclass;
-	uint8_t prog_if;
-	uint8_t int_pin;
-	uint8_t int_line;
-	PCI_bar_t bars[6];
-
-	uint16_t vendor_id;
-	uint16_t device_id;
-	uint8_t  class_code;
-} PCI_device_t;
-
 PCI_device_t devices[8 * 32 * 8];
 int nb_device = 0;
 
@@ -210,6 +178,34 @@ void scan_root_bus(void) {
 			scan_bus(i);
 		}
 	}
+}
+
+
+int PCI_get_device_by_filter(PCI_device_t *filter, char mask, int *id_out, int size){
+	int c = 0;
+	for (int i = 0; i < nb_device && c < size; i++) {
+		if (mask & 1 && (devices[i].vendor_id != filter->vendor_id))
+			continue;
+		if (mask & 2 && (devices[i].device_id != filter->device_id))
+			continue;
+		if (mask & 4 && (devices[i].class_code != filter->class_code))
+			continue;
+		if (mask & 8 && (devices[i].subclass != filter->subclass))
+			continue;
+		if (mask & 16 && (devices[i].prog_if != filter->prog_if))
+			continue;
+		id_out[c] = i;
+		c++;
+	}
+	return c;
+}
+
+PCI_device_t *PCI_get_device_by_id(int id){
+	return &devices[id];
+}
+
+int PCI_get_nb_device(){
+	return nb_device;
 }
 
 void PCI_init(){
