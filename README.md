@@ -19,20 +19,21 @@ DONE:
 - [x] Terminal
 
 TODO:
-- [ ] shell
-- [ ] ELF support
-- [ ] exec
-- [ ] fork
+- [ ] USB
 - [ ] VFS (multi disk)
+- [ ] Paging
+- [ ] userland
+- [ ] syscall
+- [ ] ELF support
 - [ ] EXT2 support
 - [ ] VFS (multi file system)
+- [ ] shell
 - [ ] text editor
 - [ ] assembleur
 - [ ] basic support
 - [ ] c compiler
 - [ ] network basic (TCP/USP/ICMP network stack)
 - [ ] network manager
-- [ ] user system
 
 Resources:
 -  [Nanobyte-dev](https://www.youtube.com/@nanobyte-dev)
