@@ -10,7 +10,7 @@ STAGE1_STAGE2_LOCATION_OFFSET=480
 
 DISK_SECTOR_COUNT=$(( (${SIZE} + 511 ) / 512 ))
 
-DISK_PART1_BEGIN=2048
+DISK_PART1_BEGIN=4096
 DISK_PART1_END=$(( ${DISK_SECTOR_COUNT} - 1 ))
 
 # generate image file
@@ -69,7 +69,7 @@ printf "%x" ${STAGE2_SECTORS} | xxd -r -p | sudo dd of=$TARGET_PARTITION conv=no
 echo "Copying files to ${TARGET_PARTITION} (mounted on /tmp/alexos)..."
 mkdir -p /tmp/alexos
 sudo mount ${TARGET_PARTITION} /tmp/alexos
-sudo cp ${BUILD_DIR}/kernel.bin /tmp/alexos
+sudo cp ${BUILD_DIR}/kernel.elf /tmp/alexos
 sudo cp test.txt /tmp/alexos
 sudo mkdir /tmp/alexos/test
 sudo cp test.txt /tmp/alexos/test

@@ -7,6 +7,7 @@
 #include "memdetect.h"
 #include "memory.h"
 #include "mbr.h"
+#include "elf.h"
 
 uint8_t* KernelLoadBuffer = (uint8_t*)MEMORY_LOAD_KERNEL;
 uint8_t* kernel = (uint8_t*)MEMORY_KERNEL_ADDR;
@@ -48,7 +49,7 @@ void __attribute__((cdecl)) cstart(uint16_t bootDrive, uint32_t partition){
 	Memory_detect(&bootparams.Memory);
 	uint8_t* kernel_buffer = (uint8_t*)bootparams.Memory.regions[3].Begin;
 	uint32_t read;
-	FAT_file* fd = FAT_Open(&partition_info, "./kernel.bin");
+	FAT_file* fd = FAT_Open(&partition_info, "./kernel.elf");
 	if(!fd){
 		putc('[');
 		putc_color('x', 0x04);
@@ -57,24 +58,26 @@ void __attribute__((cdecl)) cstart(uint16_t bootDrive, uint32_t partition){
 		goto end;
 	}
 
-	uint64_t size = 0;
-	while((read = FAT_Read(&partition_info, fd, MEMORY_LOAD_SIZE, KernelLoadBuffer))){
-		memcpy(kernel_buffer, KernelLoadBuffer, read);
-		kernel_buffer += read;
-		size += read;
-	}
-	size += (256 * 8) + 6 + 0x200; // sizeof IDT + tmp padding for malloc idk
-	//printf("size 0x%x\n", size);
-	bootparams.Memory.regions[3].Begin += size % 8 == 0 ? size : (size + (8 - size % 8));
-	FAT_Close(fd);
-	
-	// prepare boot params
-	
-	bootparams.BootDevice = bootDrive;
-	bootparams.partition_location = partition_info.partition_offset;
-	KernelStart kernel_start = (KernelStart)kernel;
-	kernel_start(&bootparams);
-
+	ELF_open(partition, fd);
+//	uint64_t size = 0;
+//	while((read = FAT_Read(&partition_info, fd, MEMORY_LOAD_SIZE, KernelLoadBuffer))){
+//		memcpy(kernel_buffer, KernelLoadBuffer, read);
+//		kernel_buffer += read;
+//		size += read;
+//	}
+//	size += (256 * 8) + 6 + 0x200; // sizeof IDT + tmp padding for malloc idk
+//	//printf("size 0x%x\n", size);
+//	bootparams.Memory.regions[3].Begin += size % 8 == 0 ? size : (size + (8 - size % 8));
+//	FAT_Close(fd);
+//	
+//	// prepare boot params
+//	
+//	bootparams.BootDevice = bootDrive;
+//	bootparams.partition_location = partition_info.partition_offset;
+//	KernelStart kernel_start = (KernelStart)kernel;
+//
+//	//kernel_start(&bootparams);
+//
 end:
 	for(;;);
 }

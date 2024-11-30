@@ -20,6 +20,7 @@
 
 extern uint8_t __bss_start;
 extern uint8_t __end;
+
 void crash_me();
 
 void timer(Register* regs){
@@ -44,10 +45,8 @@ void __attribute__((section(".entry"))) start(boot_parameters_t* bootparams){
 
 	init_memory_management(&bootparams->Memory);
 	HAL_Initialaize();
-
-//	print_all_pci_devices();
 //	debug_heap();
-	
+//
 //	for(int i = 0; i < 16; i++){
 //		if(i != 1 && i != 6){
 //			i686_IRQ_RegisterHandler(i, timer);
@@ -56,27 +55,7 @@ void __attribute__((section(".entry"))) start(boot_parameters_t* bootparams){
 //
 //	printf("Hello world from kernel\n");
 //	printf("BootDevice: 0x%x\n", bootparams->BootDevice);
-//		
-//
-//	uint16_t pci_ds[2048];
-//	uint16_t nb_found = pci_get_device_by_class(0x1, pci_ds);
-//	if(nb_found == 0){
-//		printf("NO DISK\n");
-//		goto end;
-//	}
-//
 //	printf("location: 0x%lx\n", bootparams->partition_location);
-//
-//	
-//	uint16_t size;
-//	pci_bar_t* bars = pci_get_port_info(pci_ds[0], &size);
-//	for(int i = 0; i < size; i++){
-//		printf("DISK: port: 0x%x, type: 0x%x\n", bars[i].addr._16, bars[i].type);
-//	}
-//
-//
-//	crash_me();
-//	
 //	printf("\n\n");
 //
 //	disk_ata_t atam0 = {.base_port = 0x1F0, .master = 1};
@@ -104,13 +83,10 @@ void __attribute__((section(".entry"))) start(boot_parameters_t* bootparams){
 //
 //	int handle = FAT_open(&disk, "test/azer.txt");
 //
-//	printf("%d\n", handle);
 //	char* test = "Yo ca fonctionne\n";
-//	FAT_write(&disk, handle, strlen(test), test);
-//	printf("Written\n");
+//	FAT_write(&disk, handle, strlen(test), (uint8_t*)test);
 //	FAT_seek(&disk, handle, 0, SEEK_SET);
-//	FAT_read(&disk, handle, strlen(test), test);
-//	printf("%s\n", test);
+//	FAT_read(&disk, handle, strlen(test), (uint8_t*)test);
 //	close(handle);
 //
 //
@@ -120,9 +96,10 @@ void __attribute__((section(".entry"))) start(boot_parameters_t* bootparams){
 //	char buffer_read[12] = {0};
 //	ata_read28(&atam0, 0, buffer_read, 11);
 //	printf("\n%s\n", buffer_read);
-	
-	term();
-	
+//	
+//	debug_heap();
+//	term();
+//	
 end:
 	for(;;);
 }

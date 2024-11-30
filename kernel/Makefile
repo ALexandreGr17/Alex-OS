@@ -33,9 +33,9 @@ OBJ_ASM = $(patsubst %.asm, $(BUILD_DIR)/kernel/asm/%.o, $(SRC_ASM))
 
 all: kernel
 
-kernel: always $(BUILD_DIR)/kernel.bin
+kernel: always $(BUILD_DIR)/kernel.elf
 
-$(BUILD_DIR)/kernel.bin: $(OBJ_C) $(OBJ_ASM)
+$(BUILD_DIR)/kernel.elf: $(OBJ_C) $(OBJ_ASM)
 	$(TARGET_LD) $(TARGET_LINKFLAGS) -Wl,-Map=$(BUILD_DIR)/kernel.map -o $@ $^ $(TARGET_LIBS)
 
 $(BUILD_DIR)/kernel/c/%.o: %.c $(HEADERS_C)

@@ -34,7 +34,7 @@ void XHCI_init(PCI_device_t *xhci_device){
 			break;
 		}
 	}
-	printf("CAPLENTH: 0x%x", *((uint8_t*)bar + CAPLENGTH));
+	printf("CAPLENTH: 0x%x\n", *((uint8_t*)bar + CAPLENGTH));
 }
 
 void USB_init(){

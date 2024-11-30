@@ -47,9 +47,9 @@ $(BUILD_DIR)/stage2.bin: always
 #
 # kernel
 #
-kernel: $(BUILD_DIR)/kernel.bin
+kernel: $(BUILD_DIR)/kernel.elf
 
-$(BUILD_DIR)/kernel.bin: always
+$(BUILD_DIR)/kernel.elf: always
 	$(MAKE) -C ./kernel/ BUILD_DIR=$(abspath $(BUILD_DIR))
 
 

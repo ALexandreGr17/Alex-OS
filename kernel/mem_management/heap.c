@@ -37,10 +37,12 @@ void init_memory_management(memory_info_t* mem_info_p){
 	mem_info = mem_info_p;
 	uint64_t size = 0;
 	void* first_block = get_next_free_block(mem_info->regions, &size);
+	printf("-------------\n%x\n----------------\n", size);
 	heap = first_block;
 	heap->block_strart = first_block;
 	heap->block_prev = NULL;
 	heap->block_size = size;
+	printf("-------------\n%x\n----------------\n", heap->block_size);
 	heap->used_size = sizeof(heap_t);
 	heap->last_header = NULL;
 	heap->first_header = NULL;
