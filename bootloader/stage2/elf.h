@@ -70,6 +70,10 @@ enum ELF_TYPE {
 	ELF_TYPE_CORE			= 4,
 };
 
+typedef struct {
+
+} prg_hdr_t;
+
 int ELF_open(partition_t *part, FAT_file *fd);
 
 #endif
