@@ -24,4 +24,4 @@
 // 0x000A0000 - 0x000C7FFF - Video
 // 0x000C8000 - 0x000FFFFF - BIOS
 
-#define MEMORY_KERNEL_ADDR  ((void*)0x100000)
+//#define MEMORY_KERNEL_ADDR  ((void*)0x100000)
