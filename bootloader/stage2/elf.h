@@ -21,10 +21,10 @@ typedef struct {
 	uint32_t	section_table;
 	uint32_t	flag;
 	uint16_t	header_size;
-	uint16_t	header_entry_size;
-	uint16_t	header_entry_count;
-	uint16_t	section_entry_size;
-	uint16_t	section_entry_count;
+	uint16_t	prg_header_table_entry_size;
+	uint16_t	prg_header_table_entry_count;
+	uint16_t	section_header_table_entry_size;
+	uint16_t	section_header_table_entry_count;
 	uint16_t	section_names_index;
 } __attribute__((packed)) elf_hdr_t;
 
@@ -37,7 +37,7 @@ typedef struct {
 	uint32_t	p_memsz;
 	uint32_t	flags;
 	uint32_t	alignment;
-} __attribute__((packed)) pgr_hdr_entry_t;
+} __attribute__((packed)) elf_pgr_hdr_entry_t;
 
 enum ELF_BITNESS {
 	ELF_BITNESS_32 = 1,
@@ -63,6 +63,21 @@ enum ELF_INSTRUCTION_SET {
 	ELF_INSTRUCTION_SET_RISC_V		= 0xF3,
 };
 
+enum ELF_PROGRAM_TYPE {
+    ELF_PROGRAM_TYPE_NULL       = 0,
+    ELF_PROGRAM_TYPE_LOAD       = 1,
+    ELF_PROGRAM_TYPE_DYNAMIC    = 2,
+    ELF_PROGRAM_TYPE_INTERP     = 3,
+    ELF_PROGRAM_TYPE_NOTE       = 4,
+    ELF_PROGRAM_TYPE_SHLIB      = 5,
+    ELF_PROGRAM_TYPE_PHDR       = 6,
+    ELF_PROGRAM_TYPE_TLS        = 7,
+    ELF_PROGRAM_TYPE_LOOS       = 0x60000000,
+    ELF_PROGRAM_TYPE_HIOS       = 0x6FFFFFFF,
+    ELF_PROGRAM_TYPE_LOPROC     = 0x70000000,
+    ELF_PROGRAM_TYPE_HIPROC     = 0x7FFFFFFF
+};
+
 enum ELF_TYPE {
 	ELF_TYPE_RELOCATABLE	= 1,
 	ELF_TYPE_EXECUTABLE		= 2,
@@ -74,6 +89,6 @@ typedef struct {
 
 } prg_hdr_t;
 
-int ELF_open(partition_t *part, FAT_file *fd);
+int ELF_read(partition_t* part, char* filename, void** entry_point);
 
 #endif

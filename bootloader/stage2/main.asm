@@ -56,9 +56,9 @@ entry:
 
 	xor		edx, edx
 	; calculating linear address of partition
-	mov		dx, [g_partition_seg]
+	mov		dx, [g_partition_seg] ; 0x2000
 	shl		edx, 16
-	mov		dx, [g_partition_off]
+	mov		dx, [g_partition_off] ; 0x0
 
 	push	edx
 	mov		dl, [g_BootDrive]
