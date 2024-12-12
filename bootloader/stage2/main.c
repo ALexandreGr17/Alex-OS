@@ -10,7 +10,6 @@
 #include "elf.h"
 
 uint8_t* KernelLoadBuffer = (uint8_t*)MEMORY_LOAD_KERNEL;
-uint8_t* kernel = (uint8_t*)MEMORY_KERNEL_ADDR;
 boot_parameters_t bootparams;
 
 typedef void (*KernelStart)(boot_parameters_t* BootParams);
