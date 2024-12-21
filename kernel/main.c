@@ -31,7 +31,9 @@ void timer(Register* regs){
 void term();
 
 void __attribute__((section(".entry"))) start(boot_parameters_t* bootparams){
-	memset(&__bss_start, 0, (&__end) - (&__bss_start));
+    paging_init();
+	
+    memset(&__bss_start, 0, (&__end) - (&__bss_start));
 	clrscr();
 
 	printf("Memory region count: %i\n", bootparams->Memory.region_count);
@@ -41,7 +43,6 @@ void __attribute__((section(".entry"))) start(boot_parameters_t* bootparams){
 				bootparams->Memory.regions[i].Length,
 				bootparams->Memory.regions[i].Type);
 	}
-
 
 	init_memory_management(&bootparams->Memory);
 	HAL_Initialaize();

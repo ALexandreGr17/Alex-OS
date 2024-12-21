@@ -23,7 +23,7 @@ uint32_t stack_pop() {
     return (*stack)[--head];
 }
 
-uint32_t align(uint32_t addr) {
+uint32_t align2(uint32_t addr) {
     if (addr % 0x1000 == 0) {
         return addr;
     }
@@ -31,7 +31,7 @@ uint32_t align(uint32_t addr) {
 }
 
 void add_new_frame() {
-    uint32_t next = align(last_addr);
+    uint32_t next = align2(last_addr);
     SET_BIT(next, 0);
     stack_push(next);
 }
