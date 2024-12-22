@@ -28,9 +28,9 @@ i686_load_page_dir:
 global i686_enable_paging
 i686_enable_paging:
     [ bits 32 ]
-    mov eax, cr4
-    or  eax, 0x10
-    mov cr4, eax
+  ;  mov eax, cr4
+  ;  or  eax, 0x10
+  ;  mov cr4, eax
     mov eax, cr0
     or  eax, 0x80000000
     mov cr0, eax

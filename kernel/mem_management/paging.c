@@ -4,7 +4,6 @@ extern void __attribute__((cdecl)) i686_load_page_dir(unsigned int*);
 extern void __attribute__((cdecl)) i686_enable_paging();
 
 uint32_t page_directory[1024] __attribute__((aligned(4096)));
-
 uint32_t first_page_table[1024] __attribute__((aligned(4096)));
 
 void paging_init() {
