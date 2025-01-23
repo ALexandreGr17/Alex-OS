@@ -17,8 +17,9 @@ void HAL_Initialaize(){
 	i686_ISR_Initialize();
 	i686_IRQ_Initialize();
 	i686_Keyboard_init();
-	acpi_init();
-	PCI_init();
-	USB_init();
+ //   paging_init();
+	// acpi_init();
+	// PCI_init();
+	// USB_init();
 	//fdc_init();
 }

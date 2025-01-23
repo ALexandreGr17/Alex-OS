@@ -2,6 +2,7 @@
 #include "disk.h"
 #include "errno.h"
 #include "mem_management/heap.h"
+#include "mem_management/physique/physical_memory_manager.h"
 #include "string/string.h"
 #include <stdint.h>
 #include <arch/i686/isr.h>
@@ -30,22 +31,52 @@ void timer(Register* regs){
 
 void term();
 
+char* memory_reg_type(uint8_t type) {
+    switch (type) {
+        case 1:
+            return "Available";
+        case 2:
+            return "Reserved";
+        case 3:
+            return "ACPI Reclaimed";
+        case 4:
+            return "ACPI NVS";
+        default:
+            return "Reserved";
+    
+    }
+}
+
 void __attribute__((section(".entry"))) start(boot_parameters_t* bootparams){
-    paging_init();
-	
     memset(&__bss_start, 0, (&__end) - (&__bss_start));
 	clrscr();
 
+    printf("Welcom to AlexOS\n");
 	printf("Memory region count: %i\n", bootparams->Memory.region_count);
 	for(int i = 0; i < bootparams->Memory.region_count; i++){
-		printf("Start: 0x%llx, length: 0x%llx, type: 0x%x\n", 
+		printf("Start: 0x%llx, length: 0x%llx, type: %s\n", 
 				bootparams->Memory.regions[i].Begin, 
 				bootparams->Memory.regions[i].Length,
-				bootparams->Memory.regions[i].Type);
+				memory_reg_type(bootparams->Memory.regions[i].Type));
 	}
 
-	init_memory_management(&bootparams->Memory);
 	HAL_Initialaize();
+    memory_region_t* last = &bootparams->Memory.regions[bootparams->Memory.region_count - 1];
+    uint32_t total_memory = last->Begin + last->Length - 1;
+    init_physical_memory_manager(0x30000, total_memory);
+
+    // init memory region fot the Available memory region
+    for (uint32_t i = 0; i < bootparams->Memory.region_count; i++) {
+        if (bootparams->Memory.regions[i].Type == 1) {
+            init_physical_memory_region(bootparams->Memory.regions[i].Begin, bootparams->Memory.regions[i].Length);
+        }
+    }
+
+    // Set certain regions/blocks as used or reserved
+    delete_physical_memory_region(0x1000, 0x9000);
+
+    print_physical_mem_info();
+
 //	debug_heap();
 //
 //	for(int i = 0; i < 16; i++){
