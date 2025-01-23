@@ -40,18 +40,19 @@ void keyboard_handler_main(Register* regs){
 			if(caps_lock && c >= 'a' && c <= 'z'){
 				c -= 32;
 			}
-
-			switch (c) {
-				case ',':
-					c = '?';
-					break;
-				case ';':
-					c = '.';
-					break;
-				case ':':
-					c = '/';
-					break;
-			}
+            if (caps_lock) {
+    			switch (c) {
+	    			case ',':
+		    			c = '?';
+			    		break;
+				    case ';':
+    					c = '.';
+	    				break;
+		    		case ':':
+			    		c = '/';
+				    	break;
+			    }
+            }
 
 			if(c >= '0' && c <= '9' && !num_lock){
 				return;
