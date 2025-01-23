@@ -15,8 +15,10 @@ void Memory_detect(memory_info_t* memoryInfo){
 	int ret;
 
 	ret = x86_E820GetNextBlock(&block, &continuation_id);
-	//printf("%i\n", ret);
 	while(ret > 0 && continuation_id != 0){
+        if (block.Length == 0) {
+            continue;
+        }
 		g_MemRegions[g_MemRegionsCount].Begin = block.Base;
 		g_MemRegions[g_MemRegionsCount].Length = block.Length;
 		g_MemRegions[g_MemRegionsCount].Type = block.Type;

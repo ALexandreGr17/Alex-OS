@@ -351,9 +351,11 @@ x86_E820GetNextBlock:
 	mov		eax, 0xE820							; eax function
 	mov		edx, E820Signature					
 	mov		ecx, 24								; size of structure
+    mov     [es:di + 20], DWORD 1               ; Force a valide ACPI 3.x entry
 
 	int		15h
-
+    
+    jc      .error
 	cmp		eax, E820Signature
 	jne		.error
 	mov		eax, ecx							; return size
