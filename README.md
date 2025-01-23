@@ -45,6 +45,7 @@ Resources:
 -  [Build your own x: Programming Language](https://github.com/codecrafters-io/build-your-own-x?tab=readme-ov-file#build-your-own-programming-language)
 -  [OS-dev](https://wiki.osdev.org)
 -  [Low Level](http://www.lowlevel.eu/wiki/Hauptseite)
+-  [Queso Fuego](https://www.youtube.com/@QuesoFuego)
 
 Tools:
 - [PCI Lookup](https://www.pcilookup.com)
