@@ -111,6 +111,7 @@ void free_blocks(uint32_t *address, uint32_t num_blocks) {
 void print_physical_mem_info() {
     printf("\n\n");
     printf("############## PHYSICAL MEMORY INFO ##############\n");
+    printf("memory size: 0x%x\n", max_blocks * BLOCK_SIZE);
     printf("memory_map location: 0x%x\n", memory_map);
     printf("max_blocks: %d\n", max_blocks);
     printf("used_blocks: %d\n", used_blocks);
