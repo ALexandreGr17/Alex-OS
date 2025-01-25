@@ -52,27 +52,8 @@ void __attribute__((section(".entry"))) start(boot_parameters_t* bootparams){
 				memory_reg_type(bootparams->Memory.regions[i].Type));
 	}
 
-	HAL_Initialaize();
+	HAL_Initialaize(bootparams);
 
-    memory_region_t* last = &bootparams->Memory.regions[bootparams->Memory.region_count - 1];
-    uint32_t total_memory = last->Begin + last->Length - 1;
-    init_physical_memory_manager(0x30000, total_memory);
-
-    // init memory region fot the Available memory region
-    for (uint32_t i = 0; i < bootparams->Memory.region_count; i++) {
-        if (bootparams->Memory.regions[i].Type == 1) {
-            init_physical_memory_region(bootparams->Memory.regions[i].Begin, bootparams->Memory.regions[i].Length);
-        }
-    }
-
-    // Set certain regions/blocks as used or reserved
-    delete_physical_memory_region(0x1000, 0x9000);
-
-    print_physical_mem_info();
-
-    printf("Initialize paging\n");
-    int i = init_virtual_memory_manager(bootparams->kernel_location);
-    printf("%d\n", i);
     
     // Identity  map
     

@@ -1,0 +1,42 @@
+#include "memory_management.h"
+
+#include <boot/bootparams.h>
+#include <stdio.h>
+
+#include "virtual/virtual_memory_manager.h"
+#include "physique/physical_memory_manager.h"
+
+
+#define MEMORY_MAP_LOCATION 0x30000
+#define ARBITRARY_KERNEL_SIZE 0x9000
+
+int init_memory_management(boot_parameters_t* bootparams) {
+
+    memory_region_t* last = &bootparams->Memory.regions[bootparams->Memory.region_count - 1];
+    uint32_t total_memory = last->Begin + last->Length - 1;
+
+    init_physical_memory_manager(MEMORY_MAP_LOCATION, total_memory);
+
+    // init memory region fot the Available memory region
+    for (uint32_t i = 0; i < bootparams->Memory.region_count; i++) {
+        if (bootparams->Memory.regions[i].Type == 1) {
+            init_physical_memory_region(bootparams->Memory.regions[i].Begin, bootparams->Memory.regions[i].Length);
+        }
+    }
+
+    // Set certain regions/blocks as used or reserved
+    delete_physical_memory_region(bootparams->kernel_location, ARBITRARY_KERNEL_SIZE);
+
+    print_physical_mem_info();
+
+    printf("Initialize paging\n");
+    int i = init_virtual_memory_manager(bootparams->kernel_location);
+
+    
+
+    // TODO: 
+    //  identity mapping
+    //  Kmalloc, Kcalloc, Kfree, Krealloc (kernel version)
+
+    return i;
+}

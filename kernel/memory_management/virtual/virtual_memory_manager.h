@@ -53,5 +53,7 @@ typedef struct {
 
 
 uint8_t init_virtual_memory_manager(uint32_t kernel_address);
+uint8_t map_page(void* physical_address, void *virtual_address);
+void unmap_page(void* virtual_address);
 
 #endif 

@@ -1,6 +1,7 @@
 #ifndef HAL_H
 #define HAL_H
 
-void HAL_Initialaize();
+#include <boot/bootparams.h>
+void HAL_Initialaize(boot_parameters_t* bootparams);
 
 #endif
