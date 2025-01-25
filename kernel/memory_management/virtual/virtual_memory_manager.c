@@ -1,59 +1,21 @@
-#ifndef VIRTUAL_MEMORY_MANAGER_H
-#define VIRTUAL_MEMORY_MANAGER_H
 
+#include <arch/i686/isr.h>
 #include <stdint.h>
-#include <string.h>
-#include "mem_management/physique/physical_memory_manager.h"
+#include <stdio.h>
+#include <arch/i686/io.h>
+#include <memory_management/physique/physical_memory_manager.h>
 
-#define PAGES_PER_TABLE 1024
-#define TABLE_PER_DIRECTORY 1024
-#define PAGE_SIZE 4069
-
-#define PD_INDEX(virt_addr) ((virt_addr) >> 22)
-#define PT_INDEX(virt_addr) ((virt_addr) >> 12) & 0x3FF
-#define PAGE_PHYS_ADDR(dir_entry) ((*dir_entry) & ~0xFFF)
-#define SET_ATTRIBUTE(entry, attr) (*entry |= attr)
-#define UNSET_ATTRIBUTE(entry, attr) (*entry &= ~attr)
-#define TST_ATTRIBUTE(entry, attr) (*entry & ~attr)
-#define SET_FRAME(entry, addr) (*entry = (*entry & ~0x7FFFF000) | addr)
-
-enum PAGE_TABLE_FLAGS {
-    PAGE_TABLE_ENTRY_PRESENT                = 0x01,
-    PAGE_TABLE_ENTRY_READ_WRITE             = 0x02,
-    PAGE_TABLE_ENTRY_USER                   = 0x04,
-    PAGE_TABLE_ENTRY_WRITE_THROUGH          = 0x08,
-    PAGE_TABLE_ENTRY_CACHE_DISABLE          = 0x10,
-    PAGE_TABLE_ENTRY_CACHE_ACCESSED         = 0x20,
-    PAGE_TABLE_ENTRY_CACHE_DIRTY            = 0x40,
-    PAGE_TABLE_ENTRY_PAGE_ATTRIBUTE_TABLE   = 0x80,
-    PAGE_TABLE_ENTRY_GLOBAL                 = 0x100,
-    PAGE_TABLE_ENTRY_FRAME                  = 0x7FFFF000,
-};
-
-enum PAGE_DIR_FLAGS {
-    PAGE_DIR_ENTRY_PRESENT                = 0x01,
-    PAGE_DIR_ENTRY_READ_WRITE             = 0x02,
-    PAGE_DIR_ENTRY_USER                   = 0x04,
-    PAGE_DIR_ENTRY_WRITE_THROUGH          = 0x08,
-    PAGE_DIR_ENTRY_CACHE_DISABLE          = 0x10,
-    PAGE_DIR_ENTRY_CACHE_ACCESSED         = 0x20,
-    PAGE_DIR_ENTRY_CACHE_DIRTY            = 0x40,
-    PAGE_DIR_ENTRY_PAGE_SIZE              = 0x80,
-    PAGE_DIR_ENTRY_GLOBAL                 = 0x100,
-    PAGE_DIR_ENTRY_PAGE_ATTRIBUTE_TABLE   = 0x200,
-    PAGE_DIR_ENTRY_FRAME                  = 0x7FFFF000,
-};
-
-typedef struct {
-    uint32_t entries[PAGES_PER_TABLE];
-} page_table;
-
-typedef struct {
-    uint32_t entries[TABLE_PER_DIRECTORY];
-} page_directory;
+#include "virtual_memory_manager.h"
+#include "x86_virtual_mem.h"
 
 page_directory* current_page_dir = NULL;
-uint32_t current_pd_address = NULL;
+
+void i686_Page_fault_handler(Register* regs) {
+    printf("Page Fault\n");
+    printf("Bad address: 0x%x\n", i686_get_cr2());
+    i686_panic();
+}
+
 
 uint32_t *get_page_table_entry(page_table* pt, uint32_t address){
     if (pt) {
@@ -100,8 +62,8 @@ uint8_t set_page_directory(page_directory* pd) {
 
     current_page_dir = pd;
 
-    __asm__ __volatile__ ("movl %%EAX, %%CR3" : : "a"(current_page_dir) );
-
+    printf("Setting CR3 to: 0x%x\n", current_page_dir);
+    i686_load_page_dir(current_page_dir);
     return 1;
 }
 
@@ -142,12 +104,14 @@ void unmap_page(void* virtual_address) {
     UNSET_ATTRIBUTE(page, PAGE_TABLE_ENTRY_PRESENT);
 }
 
-uint8_t init_virtual_memory_manager(void) {
+uint8_t init_virtual_memory_manager(uint32_t kernel_address) {
     page_directory* dir = (page_directory*)allocate_blocks(3);
 
     if (!dir) {
         return 0; // Out of physical_memory_manager
     }
+
+
     memset(dir, 0, sizeof(page_directory));
 
     for (uint32_t i = 0; i < TABLE_PER_DIRECTORY; i++) {
@@ -159,6 +123,59 @@ uint8_t init_virtual_memory_manager(void) {
     if (!table) {
         return 0;
     }
+
+    // Allocate a 3GB page table
+    page_table* table_higher_half = (page_table*)allocate_blocks(1);
+
+    if (!table_higher_half) {
+        return 0;
+    }
+
+    memset(table, 0, sizeof(page_table));
+    memset(table_higher_half, 0, sizeof(page_table));
+
+    // Identity map 1st 4MB of memory
+
+    for (uint32_t i = 0, frame =0x0, virt = 0x0; i < PAGES_PER_TABLE; i++, frame += PAGE_SIZE, virt += PAGE_SIZE) {
+        uint32_t page = 0;
+        SET_ATTRIBUTE(&page, PAGE_TABLE_ENTRY_PRESENT);
+        SET_ATTRIBUTE(&page, PAGE_TABLE_ENTRY_READ_WRITE);
+        SET_FRAME(&page, frame);
+
+        // Add page to 3GB page table
+        table_higher_half->entries[PT_INDEX(virt)] = page;
+    }
+
+    // Map kernel to 3GB+
+
+    for (uint32_t i = 0, frame = kernel_address, virt = 0xC0000000; i < PAGES_PER_TABLE; i++, frame += PAGE_SIZE, virt += PAGE_SIZE) {
+        uint32_t page = 0;
+        SET_ATTRIBUTE(&page, PAGE_TABLE_ENTRY_PRESENT);
+        SET_ATTRIBUTE(&page, PAGE_TABLE_ENTRY_READ_WRITE);
+        SET_FRAME(&page, frame);
+
+        table->entries[PT_INDEX(virt)] = page;
+    }
+
+    uint32_t* entry = &dir->entries[PD_INDEX(0xC0000000)];
+    SET_ATTRIBUTE(entry, PAGE_DIR_ENTRY_PRESENT);
+    SET_ATTRIBUTE(entry, PAGE_DIR_ENTRY_READ_WRITE);
+    SET_FRAME(entry, (uint32_t)table);  // 0xC0000000 point to default page table
+
+    entry = &dir->entries[PD_INDEX(0x00000000)];
+    SET_ATTRIBUTE(entry, PAGE_DIR_ENTRY_PRESENT);
+    SET_ATTRIBUTE(entry, PAGE_DIR_ENTRY_READ_WRITE);
+    SET_FRAME(entry, (uint32_t)table_higher_half); // 0x00000000 point to kernel page table
+
+    if (!set_page_directory(dir)){
+        return 0;
+    }
+
+    i686_ISR_Registerhandler(14, i686_Page_fault_handler);
+
+    // Enable paging: Set paging bit (31) and protection enable bit (0) of CR0
+    i686_enable_paging();
+
+    return 1;
 }
 
-#endif 

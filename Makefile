@@ -74,13 +74,10 @@ debug:
 	bochs -f bochs_config
 
 debug_disk: $(BUILD_DIR)/main_disk.raw
-	 sudo qemu-system-x86_64 -device qemu-xhci -monitor stdio -hda $<
+	 # sudo qemu-system-x86_64 -device qemu-xhci -monitor stdio -hda $<
 	#bochs -f ./bochs_config_disk
-	#qemu-system-i386 -hda $< -S -s &
+	qemu-system-i386 -hda $< -S -s &
 	#gdb -nx -ix \ #./gdb_init_real_mode.txt \
 	#	-ex "target remote localhost:1234"\
 	#	-ex "break *0x7c00" \
-	#	-ex "continue"
-	#gdb -nx -x debug_script.gdb \
-	#	-ex "break *0x7c00"				\
 	#	-ex "continue"

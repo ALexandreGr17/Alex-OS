@@ -19,6 +19,7 @@ typedef struct {
 	uint32_t partition_location;
 	memory_info_t Memory;
 	uint8_t BootDevice;
+    uint32_t kernel_location;
 } boot_parameters_t;
 
 typedef enum {

@@ -3,9 +3,8 @@
 
 #include <stdint.h>
 #include <memory/memory.h>
-#include <stdio.h>
 
-#define BLOCK_SIZE 4069
+#define BLOCK_SIZE 4096
 #define BLOCK_PER_BYTE 8
 
 void set_block(uint32_t bit);

@@ -1,8 +1,8 @@
 #include "arch/i686/fdc.h"
 #include "disk.h"
 #include "errno.h"
-#include "mem_management/heap.h"
-#include "mem_management/physique/physical_memory_manager.h"
+#include <memory_management/virtual/virtual_memory_manager.h>
+#include <memory_management/physique/physical_memory_manager.h>
 #include "string/string.h"
 #include <stdint.h>
 #include <arch/i686/isr.h>
@@ -14,7 +14,6 @@
 #include <arch/i686/keyboard.h>
 #include <arch/i686/pci/pci.h>
 #include <arch/i686/ata.h>
-#include <mem_management.h>
 #include <filesystem/fat.h>
 #include "vfs/vfs.h"
 #include <arch/i686/acpi.h>
@@ -23,13 +22,6 @@ extern uint8_t __bss_start;
 extern uint8_t __end;
 
 void crash_me();
-
-void timer(Register* regs){
-	//printf(".");
-}
-
-
-void term();
 
 char* memory_reg_type(uint8_t type) {
     switch (type) {
@@ -61,6 +53,7 @@ void __attribute__((section(".entry"))) start(boot_parameters_t* bootparams){
 	}
 
 	HAL_Initialaize();
+
     memory_region_t* last = &bootparams->Memory.regions[bootparams->Memory.region_count - 1];
     uint32_t total_memory = last->Begin + last->Length - 1;
     init_physical_memory_manager(0x30000, total_memory);
@@ -77,13 +70,14 @@ void __attribute__((section(".entry"))) start(boot_parameters_t* bootparams){
 
     print_physical_mem_info();
 
-//	debug_heap();
+    printf("Initialize paging\n");
+    int i = init_virtual_memory_manager(bootparams->kernel_location);
+    printf("%d\n", i);
+    
+    // Identity  map
+    
 //
-//	for(int i = 0; i < 16; i++){
-//		if(i != 1 && i != 6){
-//			i686_IRQ_RegisterHandler(i, timer);
-//		}
-//	}
+
 //
 //	printf("Hello world from kernel\n");
 //	printf("BootDevice: 0x%x\n", bootparams->BootDevice);
@@ -129,116 +123,8 @@ void __attribute__((section(".entry"))) start(boot_parameters_t* bootparams){
 //	ata_read28(&atam0, 0, buffer_read, 11);
 //	printf("\n%s\n", buffer_read);
 //	
-//	debug_heap();
-//	term();
 //	
 end:
 	for(;;);
-}
-
-// TODO:
-//		parse line
-//		cat
-//		ls
-//		touch
-//		mkdir
-
-char* builtin[] = {
-	"help",
-	"cat",
-	"test",
-	"ls",
-	"touch",
-	"mkdir"
-};
-
-void exec_cmdline(char* line){
-	char* old = line;
-	for(int i = 0; line[i] && line[i] != '\n'; i++){
-		if(line[i] == ' '){
-			line[i] = 0;
-
-		}
-	}
-}
-
-void trim(char* buffer){
-	for(int i = 0; buffer[i]; i++){
-		if(buffer[i] == '\n'){
-			buffer[i] = 0;
-			return;
-		}
-	}
-}
-
-void term(disk_t* disk){
-	for(;;){
-		printf("> ");
-		char* buffer = NULL;
-		
-		uint32_t size = 0;
-		read_line(STDIN, &size, &buffer);
-		trim(buffer);
-		char* args = strchr(buffer, ' ');
-		buffer[args - buffer] = 0;
-		args++;
-		//printf("you wrote: %s\n", buffer);
-		if(strcmp(buffer, "ping")){
-			printf("pong\n");
-		}
-
-		if(strcmp(buffer, "ls")){
-			int handle = open(args, 0);
-			list(handle);
-		}
-
-		if(strcmp(buffer, "cat")){
-			int handle = open(args, 0);
-			if(handle == -1){
-				printf("aie\n");
-				continue;
-			}
-			seek(handle, 0, SEEK_END);
-			uint32_t size = tellpos(handle);
-			seek(handle, 0, SEEK_SET);
-			char* test = calloc(size, 0);
-			read(handle, size, test);
-			printf("%s", test);
-			free(test);
-			close(handle);
-		}
-
-		if(strcmp(buffer, "touch")){
-			int handle = open(args, 1);
-			if(handle < 0){
-				printf("Failed\n");
-				continue;
-			}
-			printf("new file %s created \n", args);
-		}
-
-		if(strcmp(buffer, "write")){
-			char* filename = args;
-			char* data = strchr(args, ' ');
-			filename[data - filename] = 0;
-			data++;
-			int handle = open(filename, 0);
-			if(handle < 0){
-				printf("no such file %s\n", filename);
-				continue;
-			}
-			write(handle, strlen(data), data);
-		}
-
-		if(strcmp(buffer, "help")){
-			printf("Voici les commandes possible:\n\tls <path>: list les fichier et dossier dans le dossier <path>\n\tcat <file>: lis le fichier path\n\ttouch <file>: creer le fichier file\n\twrite <file> <data>: ecris data dans le fichier file\n\tclear: clear l'ecran\n");
-		}
-
-		if(strcmp(buffer, "clear")){
-			clrscr();
-		}
-
-		free(buffer);
-	}
 }
 
