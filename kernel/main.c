@@ -3,6 +3,7 @@
 #include "errno.h"
 #include <memory_management/virtual/virtual_memory_manager.h>
 #include <memory_management/physique/physical_memory_manager.h>
+#include "memory_management/memory_management.h"
 #include "string/string.h"
 #include <stdint.h>
 #include <arch/i686/isr.h>
@@ -54,6 +55,15 @@ void __attribute__((section(".entry"))) start(boot_parameters_t* bootparams){
 
 	HAL_Initialaize(bootparams);
 
+    uint8_t* buf = malloc(90);
+    for(int i = 0; i < 10; i++) {
+        buf[i] = i;
+    }
+
+    for(int i = 0; i < 10; i++) {
+        printf("%d\n", buf[i]);
+    }
+    free(buf);
     
     // Identity  map
     

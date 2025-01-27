@@ -7,4 +7,7 @@
 void memcpy(void* dst, const void* src, uint32_t n);
 void memset(void *ptr, int value, uint32_t n);
 uint8_t memcmp(const void *ptr1, const void *prt2, uint32_t n);
+void* malloc(uint32_t size);
+void free(void* ptr);
+
 #endif

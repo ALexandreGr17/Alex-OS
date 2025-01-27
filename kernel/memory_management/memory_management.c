@@ -1,6 +1,7 @@
 #include "memory_management.h"
 
 #include <boot/bootparams.h>
+#include <stdint.h>
 #include <stdio.h>
 
 #include "virtual/virtual_memory_manager.h"
@@ -39,4 +40,29 @@ int init_memory_management(boot_parameters_t* bootparams) {
     //  Kmalloc, Kcalloc, Kfree, Krealloc (kernel version)
 
     return i;
+}
+
+void* allocate_new_page(uint32_t address, uint32_t nb_page) {
+    void* base_address = allocate_blocks(nb_page);
+    void* tmp_base_address = base_address;
+    void* tmp_address = (void*)address;
+    for (uint32_t i = 0; i < nb_page; i++, tmp_base_address += PAGE_SIZE, tmp_address += PAGE_SIZE) {
+        if (!map_page(tmp_base_address, (void*)address)) {
+            free_blocks(base_address, nb_page);
+            tmp_address = (void*)address;
+            for (uint32_t j = 0; j < i; j++, tmp_address += PAGE_SIZE) {
+                unmap_page(tmp_address);
+            }
+            return NULL;
+        }
+    }
+    return (void*)address;
+}
+
+void deallocate_page(uint32_t address, uint32_t nb_page) {
+    void* base_address = get_page(address);
+    free_blocks(base_address, nb_page);
+    for (uint32_t i = 0; i < nb_page; i++, address += PAGE_SIZE) {
+        unmap_page((void*)address);
+    }
 }

@@ -18,8 +18,8 @@ void HAL_Initialaize(boot_parameters_t* bootparams){
 	i686_IRQ_Initialize();
 	i686_Keyboard_init();
     init_memory_management(bootparams);
-	acpi_init();
-	PCI_init();
-	USB_init();
+	// acpi_init();
+	// PCI_init();
+	// USB_init();
 	//fdc_init();
 }

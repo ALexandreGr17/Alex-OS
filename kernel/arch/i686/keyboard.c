@@ -57,7 +57,7 @@ void keyboard_handler_main(Register* regs){
 			if(c >= '0' && c <= '9' && !num_lock){
 				return;
 			}
-			write(0, 1, &c);
+	//		write(0, 1, &c);
 			printf("%c", c);
 		}
 		else{
