@@ -17,11 +17,11 @@ DONE:
 - [x] FAT32/16/12 support (Kernel)
 - [x] VFS (basique)
 - [x] Terminal
+- [x] Paging
 
 TODO:
 - [ ] USB
 - [ ] VFS (multi disk)
-- [ ] Paging
 - [ ] userland
 - [ ] syscall
 - [ ] ELF support
