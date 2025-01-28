@@ -1,5 +1,5 @@
 export MAKE_DISK_SIZE = 16777216 # 16 MB
-export FILESYSTEM = 1 # FAT12: 1, FAT16: 2, FAT32: 3 
+export FILESYSTEM = 3 # FAT12: 1, FAT16: 2, FAT32: 3 
 
 export CFLAGS = -std=c99 -g
 export ASMFLAGS =

@@ -1,5 +1,6 @@
 #include "memory.h"
 #include <stdint.h>
+#include <stdio.h>
 
 
 void memcpy(void* dst, const void* src, uint32_t size){
@@ -12,6 +13,7 @@ void memset(void *ptr, int value, uint32_t n){
 	for(int i = 0; i < n; i++){
 		((uint8_t*)ptr)[i] = (uint8_t)value;
 	}
+
 }
 
 uint8_t memcmp(const void *ptr1, const void *prt2, uint32_t n){

@@ -40,6 +40,8 @@ char* memory_reg_type(uint8_t type) {
     }
 }
 
+void term(disk_t* disk);
+
 void __attribute__((section(".entry"))) start(boot_parameters_t* bootparams){
     memset(&__bss_start, 0, (&__end) - (&__bss_start));
 	clrscr();
@@ -55,45 +57,32 @@ void __attribute__((section(".entry"))) start(boot_parameters_t* bootparams){
 
 	HAL_Initialaize(bootparams);
 
-    uint8_t* buf = malloc(90);
-    for(int i = 0; i < 10; i++) {
-        buf[i] = i;
+
+    printf("Hello world from kernel\n");
+    printf("BootDevice: 0x%x\n", bootparams->BootDevice);
+    printf("partition location: 0x%lx\n", bootparams->partition_location);
+    printf("\n\n");
+
+    disk_ata_t atam0 = {.base_port = 0x1F0, .master = 1};
+    ata_init(&atam0, 1, bootparams->partition_location);
+    identify(&atam0);
+
+    disk_t disk = {
+	    .disk = &atam0,
+    	.disk_read = &ata_read28,
+    	.disk_write = &ata_write28
+    };
+
+    disk_t* disks = &disk;
+    vfs_init(&disks, 1);
+
+
+    if(!FAT_init(&disk)){
+    	printf("FAT init failed errno: 0x%x\n", errno);
+	    goto end;
     }
 
-    for(int i = 0; i < 10; i++) {
-        printf("%d\n", buf[i]);
-    }
-    free(buf);
-    
-    // Identity  map
-    
-//
-
-//
-//	printf("Hello world from kernel\n");
-//	printf("BootDevice: 0x%x\n", bootparams->BootDevice);
-//	printf("location: 0x%lx\n", bootparams->partition_location);
-//	printf("\n\n");
-//
-//	disk_ata_t atam0 = {.base_port = 0x1F0, .master = 1};
-//	ata_init(&atam0, 1, bootparams->partition_location);
-//	identify(&atam0);
-//
-//	disk_t disk = {
-//		.disk = &atam0,
-//		.disk_read = &ata_read28,
-//		.disk_write = &ata_write28
-//	};
-//
-//	disk_t* disks = &disk;
-//	vfs_init(&disks, 1);
-//
-//	if(!FAT_init(&disk)){
-//		printf("FAT init failed errno: 0x%x\n", errno);
-//		goto end;
-//	}
-//
-//	printf("FAT init\n");
+    printf("FAT init\n");
 //
 //	FAT_create_file(&disk, "/test/azer.txt");
 //	printf("------------------------------------------\n");
@@ -114,8 +103,114 @@ void __attribute__((section(".entry"))) start(boot_parameters_t* bootparams){
 //	ata_read28(&atam0, 0, buffer_read, 11);
 //	printf("\n%s\n", buffer_read);
 //	
-//	
+   term(disks);
+
 end:
 	for(;;);
 }
 
+
+char* builtin[] = {
+	"help",
+	"cat",
+	"quit",
+	"test",
+	"ls",
+	"touch",
+	"mkdir"
+};
+
+void exec_cmdline(char* line){
+	char* old = line;
+	for(int i = 0; line[i] && line[i] != '\n'; i++){
+		if(line[i] == ' '){
+			line[i] = 0;
+
+		}
+	}
+}
+
+void trim(char* buffer){
+	for(int i = 0; buffer[i]; i++){
+		if(buffer[i] == '\n'){
+			buffer[i] = 0;
+			return;
+		}
+	}
+}
+
+void term(disk_t* disk){
+	for(;;){
+		printf("> ");
+		char* buffer = NULL;
+		
+		uint32_t size = 0;
+		read_line(STDIN, &size, &buffer);
+		trim(buffer);
+		char* args = strchr(buffer, ' ');
+		buffer[args - buffer] = 0;
+		args++;
+		//printf("you wrote: %s\n", buffer);
+		if(strcmp(buffer, "quit")){
+			printf("bye\n");
+			return;
+		}
+
+		if(strcmp(buffer, "ls")){
+			int handle = open(args, 0);
+			list(handle);
+		}
+
+		if(strcmp(buffer, "cat")){
+			int handle = open(args, 0);
+			if(handle == -1){
+				printf("aie\n");
+				continue;
+			}
+			seek(handle, 0, SEEK_END);
+			uint32_t size = tellpos(handle);
+            if (size == 0) {
+                printf("file is empty\n");
+                continue;
+            }
+			seek(handle, 0, SEEK_SET);
+			char* test = calloc(size, 1);
+			read(handle, size, test);
+			printf("%s", test);
+			free(test);
+			close(handle);
+		}
+
+		if(strcmp(buffer, "touch")){
+			int handle = open(args, 1);
+			if(handle < 0){
+				printf("Failed\n");
+				continue;
+			}
+			printf("new file %s created \n", args);
+		}
+
+		if(strcmp(buffer, "write")){
+			char* filename = args;
+			char* data = strchr(args, ' ');
+			filename[data - filename] = 0;
+			data++;
+			int handle = open(filename, 0);
+			if(handle < 0){
+				printf("no such file %s\n", filename);
+				continue;
+			}
+			write(handle, strlen(data), data);
+		}
+
+		if(strcmp(buffer, "help")){
+			printf("Voici les commandes possible:\n\tls <path>: list les fichier et dossier dans le dossier <path>\n\tcat <file>: lis le fichier path\n\ttouch <file>: creer le fichier file\n\twrite <file> <data>: ecris data dans le fichier file\n\tclear: clear l'ecran\n");
+		}
+
+		if(strcmp(buffer, "clear")){
+			clrscr();
+		}
+
+		free(buffer);
+	}
+}

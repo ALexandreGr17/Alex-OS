@@ -16,6 +16,7 @@ struct page_header {
     struct page_header* next;
     uint32_t            size;
     uint32_t           used_size;
+    uint32_t           nb_block;
 };
 
 struct blk_header* free_list = NULL;
@@ -89,30 +90,28 @@ void* malloc(uint32_t size) {
 
     struct blk_header* header = find_free_blk(align_size);
     if (header) {
+        header->size = size;
         return (void*)((uint32_t)header + sizeof(struct blk_header));
     }
+
     struct page_header* tmp = page_list;
     while(tmp->next != NULL && tmp->size - tmp->used_size < align_size + sizeof(struct blk_header)) {
         tmp = tmp->next;
     }
 
     if (tmp->size - tmp->used_size < align_size + sizeof(struct blk_header)) {
-        if(!add_page(align_size)){
-            return 0;
+        if(!add_page(align_size + sizeof(struct blk_header) + sizeof(struct page_header))){
+            return NULL;
         }
         tmp = tmp->next;
     }
-    header = (struct blk_header*)((uint32_t)tmp + sizeof(struct page_header));
-    int i = 0;
-    while (i < (tmp->used_size - sizeof(struct page_header) / sizeof(struct blk_header))) {
-        i++;
-        header++;
-    }
-    header->next = (struct blk_header*)((uint32_t)header + sizeof(struct blk_header) + header->size);
-    header = header->next;
+
+    header = (struct blk_header*)((uint32_t)tmp + tmp->used_size);
     header->size = size;
     header->actual_size = align_size;
     header->next = NULL;
+    tmp->used_size += sizeof(struct blk_header) + header->actual_size;
+    tmp->nb_block++;
 
     return (void*)((uint32_t)header + sizeof(struct blk_header));
 }
@@ -127,4 +126,28 @@ void free(void* ptr) {
     struct blk_header* header = (void*)((uint32_t)ptr - sizeof(struct blk_header)); // page_begin(ptr, header->actual_size);
     header->next = free_list;
     free_list = header;
+}
+
+void* calloc(uint32_t size, uint32_t nmenb) {
+    uint8_t* ptr = malloc(size * nmenb);
+    memset(ptr, 0, size * nmenb);
+    return ptr;
+}
+
+void* realloc(void* ptr, uint32_t size) {
+    if (size == 0) {
+        free(ptr);
+    }
+    if (ptr == NULL) {
+        return malloc(size);
+    }
+    struct blk_header* header = (void*)((uint32_t)ptr - sizeof(struct blk_header)); // page_begin(ptr, header->actual_size);
+    if (header->actual_size < size) {
+        header->size = size;
+        return ptr;
+    }
+    void* new = malloc(size);
+    memcpy(new, ptr, size);
+    free(ptr);
+    return new;
 }
