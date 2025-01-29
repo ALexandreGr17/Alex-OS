@@ -271,7 +271,7 @@ void printf(const char* fmt, ...)
                                 break;
 
                     case 's':   
-                                puts(va_arg(args, const char*));
+                                puts(va_arg(args, char*));
                                 break;
 
                     case '%':   putc('%');

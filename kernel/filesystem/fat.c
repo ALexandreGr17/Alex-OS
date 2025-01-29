@@ -1,10 +1,10 @@
 #include "disk.h"
 #include "memory/memory.h"
-#include "string/string.h"
 #include <stdint.h>
 #include <stdio.h>
 #include <errno.h>
 #include <filesystem/fat.h>
+#include <string/string.h>
 
 #define MAX_OPEN_FILE	50
 #define ROOT_DIR_HANDLE -1
@@ -688,12 +688,11 @@ void FAT_list(disk_t* disk, int handle){
 			continue;
 		}
 
-		char filename[12] = {0};
-		//debug_entry(entry);
-		printf("%s  %i,	%s\n", 
-				((entry->attributes & DIRECTORY) != 0? ' ' : 'd'), 
-				entry->size, 
-				entry->filename);
+    	char filename[12] = {0};
+        memcpy(filename, (char*)entry->filename, 11);
+        printf("%c      ", (entry->attributes & DIRECTORY) != 0 ? 'd' : ' ');
+		printf("%li,    ", entry->size);
+        printf("%s\n", filename);
 
 	}while(entry->filename[0] != 0);
 	

@@ -105,6 +105,7 @@ void __attribute__((section(".entry"))) start(boot_parameters_t* bootparams){
 //	
    term(disks);
 
+
 end:
 	for(;;);
 }
@@ -145,7 +146,7 @@ void term(disk_t* disk){
 		char* buffer = NULL;
 		
 		uint32_t size = 0;
-		read_line(STDIN, &size, &buffer);
+		read_line(STDIN, &size, (void**)&buffer);
 		trim(buffer);
 		char* args = strchr(buffer, ' ');
 		buffer[args - buffer] = 0;
