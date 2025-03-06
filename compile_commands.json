@@ -220,6 +220,23 @@
       "-I./../libs/",
       "-c",
       "-o",
+      "/home/alexandre/projet/Alex-OS/bin/kernel/c/ELF/ELF.o",
+      "ELF/ELF.c"
+    ],
+    "directory": "/home/alexandre/projet/Alex-OS/kernel",
+    "file": "/home/alexandre/projet/Alex-OS/kernel/ELF/ELF.c",
+    "output": "/home/alexandre/projet/Alex-OS/bin/kernel/c/ELF/ELF.o"
+  },
+  {
+    "arguments": [
+      "/home/alexandre/projet/Alex-OS/toolchain/i686-elf/bin/i686-elf-gcc",
+      "-std=c99",
+      "-g",
+      "-ffreestanding",
+      "-I./",
+      "-I./../libs/",
+      "-c",
+      "-o",
       "/home/alexandre/projet/Alex-OS/bin/kernel/c/filesystem/fat.o",
       "filesystem/fat.c"
     ],
@@ -254,12 +271,12 @@
       "-I./../libs/",
       "-c",
       "-o",
-      "/home/alexandre/projet/Alex-OS/bin/kernel/c/mem_management/frame_allocator.o",
-      "mem_management/frame_allocator.c"
+      "/home/alexandre/projet/Alex-OS/bin/kernel/c/memory/malloc.o",
+      "memory/malloc.c"
     ],
     "directory": "/home/alexandre/projet/Alex-OS/kernel",
-    "file": "/home/alexandre/projet/Alex-OS/kernel/mem_management/frame_allocator.c",
-    "output": "/home/alexandre/projet/Alex-OS/bin/kernel/c/mem_management/frame_allocator.o"
+    "file": "/home/alexandre/projet/Alex-OS/kernel/memory/malloc.c",
+    "output": "/home/alexandre/projet/Alex-OS/bin/kernel/c/memory/malloc.o"
   },
   {
     "arguments": [
@@ -271,46 +288,12 @@
       "-I./../libs/",
       "-c",
       "-o",
-      "/home/alexandre/projet/Alex-OS/bin/kernel/c/mem_management/heap.o",
-      "mem_management/heap.c"
+      "/home/alexandre/projet/Alex-OS/bin/kernel/c/memory_management/memory_management.o",
+      "memory_management/memory_management.c"
     ],
     "directory": "/home/alexandre/projet/Alex-OS/kernel",
-    "file": "/home/alexandre/projet/Alex-OS/kernel/mem_management/heap.c",
-    "output": "/home/alexandre/projet/Alex-OS/bin/kernel/c/mem_management/heap.o"
-  },
-  {
-    "arguments": [
-      "/home/alexandre/projet/Alex-OS/toolchain/i686-elf/bin/i686-elf-gcc",
-      "-std=c99",
-      "-g",
-      "-ffreestanding",
-      "-I./",
-      "-I./../libs/",
-      "-c",
-      "-o",
-      "/home/alexandre/projet/Alex-OS/bin/kernel/c/mem_management/malloc.o",
-      "mem_management/malloc.c"
-    ],
-    "directory": "/home/alexandre/projet/Alex-OS/kernel",
-    "file": "/home/alexandre/projet/Alex-OS/kernel/mem_management/malloc.c",
-    "output": "/home/alexandre/projet/Alex-OS/bin/kernel/c/mem_management/malloc.o"
-  },
-  {
-    "arguments": [
-      "/home/alexandre/projet/Alex-OS/toolchain/i686-elf/bin/i686-elf-gcc",
-      "-std=c99",
-      "-g",
-      "-ffreestanding",
-      "-I./",
-      "-I./../libs/",
-      "-c",
-      "-o",
-      "/home/alexandre/projet/Alex-OS/bin/kernel/c/mem_management/pf_alloc.o",
-      "mem_management/pf_alloc.c"
-    ],
-    "directory": "/home/alexandre/projet/Alex-OS/kernel",
-    "file": "/home/alexandre/projet/Alex-OS/kernel/mem_management/pf_alloc.c",
-    "output": "/home/alexandre/projet/Alex-OS/bin/kernel/c/mem_management/pf_alloc.o"
+    "file": "/home/alexandre/projet/Alex-OS/kernel/memory_management/memory_management.c",
+    "output": "/home/alexandre/projet/Alex-OS/bin/kernel/c/memory_management/memory_management.o"
   },
   {
     "arguments": [
@@ -396,6 +379,23 @@
     "directory": "/home/alexandre/projet/Alex-OS/kernel",
     "file": "/home/alexandre/projet/Alex-OS/kernel/arch/i686/ata.c",
     "output": "/home/alexandre/projet/Alex-OS/bin/kernel/c/arch/i686/ata.o"
+  },
+  {
+    "arguments": [
+      "/home/alexandre/projet/Alex-OS/toolchain/i686-elf/bin/i686-elf-gcc",
+      "-std=c99",
+      "-g",
+      "-ffreestanding",
+      "-I./",
+      "-I./../libs/",
+      "-c",
+      "-o",
+      "/home/alexandre/projet/Alex-OS/bin/kernel/c/arch/i686/cmos.o",
+      "arch/i686/cmos.c"
+    ],
+    "directory": "/home/alexandre/projet/Alex-OS/kernel",
+    "file": "/home/alexandre/projet/Alex-OS/kernel/arch/i686/cmos.c",
+    "output": "/home/alexandre/projet/Alex-OS/bin/kernel/c/arch/i686/cmos.o"
   },
   {
     "arguments": [
@@ -532,6 +532,40 @@
     "directory": "/home/alexandre/projet/Alex-OS/kernel",
     "file": "/home/alexandre/projet/Alex-OS/kernel/arch/i686/pic.c",
     "output": "/home/alexandre/projet/Alex-OS/bin/kernel/c/arch/i686/pic.o"
+  },
+  {
+    "arguments": [
+      "/home/alexandre/projet/Alex-OS/toolchain/i686-elf/bin/i686-elf-gcc",
+      "-std=c99",
+      "-g",
+      "-ffreestanding",
+      "-I./",
+      "-I./../libs/",
+      "-c",
+      "-o",
+      "/home/alexandre/projet/Alex-OS/bin/kernel/c/memory_management/physique/physical_memory_manager.o",
+      "memory_management/physique/physical_memory_manager.c"
+    ],
+    "directory": "/home/alexandre/projet/Alex-OS/kernel",
+    "file": "/home/alexandre/projet/Alex-OS/kernel/memory_management/physique/physical_memory_manager.c",
+    "output": "/home/alexandre/projet/Alex-OS/bin/kernel/c/memory_management/physique/physical_memory_manager.o"
+  },
+  {
+    "arguments": [
+      "/home/alexandre/projet/Alex-OS/toolchain/i686-elf/bin/i686-elf-gcc",
+      "-std=c99",
+      "-g",
+      "-ffreestanding",
+      "-I./",
+      "-I./../libs/",
+      "-c",
+      "-o",
+      "/home/alexandre/projet/Alex-OS/bin/kernel/c/memory_management/virtual/virtual_memory_manager.o",
+      "memory_management/virtual/virtual_memory_manager.c"
+    ],
+    "directory": "/home/alexandre/projet/Alex-OS/kernel",
+    "file": "/home/alexandre/projet/Alex-OS/kernel/memory_management/virtual/virtual_memory_manager.c",
+    "output": "/home/alexandre/projet/Alex-OS/bin/kernel/c/memory_management/virtual/virtual_memory_manager.o"
   },
   {
     "arguments": [

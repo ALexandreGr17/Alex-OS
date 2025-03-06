@@ -24,7 +24,7 @@ void vfs_init(disk_t** disk, uint8_t nb_disk){
 	}
 }
 
-int open(char* path, uint8_t create){
+int open(const char* path, uint8_t create){
 	char* tmp_path = calloc(strlen(path) + 1, 1);
 	strcpy(tmp_path, path);
 
