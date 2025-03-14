@@ -22,6 +22,49 @@ struct page_header {
 struct blk_header* free_list = NULL;
 struct page_header* page_list = NULL;
 
+void debug_free_list() {
+    printf("########## Free list ##########\n");
+    int i = 0;
+    struct blk_header* tmp = free_list;
+    while (tmp != NULL) {
+        printf("    ### blk %d ###\n", i);
+        printf("\tblk: %x\n", tmp);
+        printf("\tnext: %x\n", tmp->next);
+        printf("\tsize: %x\n", tmp->size);
+        printf("\tactual_size: %x\n", tmp->actual_size);
+        tmp = tmp->next;
+        printf("\n");
+        i++;
+    }
+    printf("\n\n");
+}
+
+void debug_page(struct page_header* page) {
+    printf("###### Page ######\n");
+    printf("page: %x\n", page);
+    printf("next: %x\n", page->next);
+    printf("size: %x\n", page->size);
+    printf("used_size: %x\n", page->used_size);
+    printf("nb_block: %x\n", page->nb_block);
+    struct blk_header* blk = (void*)((uint32_t)page + sizeof(struct page_header));
+    for (int i = 0; i < page->nb_block; i++) {
+        printf("### blk %d ###\n", i);
+        printf("blk: %x\n", blk);
+        printf("next: %x\n", blk->next);
+        printf("size: %x\n", blk->size);
+        printf("actual_size: %x\n", blk->actual_size);
+        blk = (void*)((uint32_t)blk + blk->actual_size + sizeof(struct blk_header));
+    }
+}
+
+void debug_page_list() {
+    struct page_header* tmp = page_list;
+    while(tmp != NULL) {
+        debug_page(tmp);
+        tmp = tmp->next;
+    }
+}
+
 uint32_t align(uint32_t n, uint32_t base) {
     if (n % base == 0) {
         return n;
@@ -61,7 +104,7 @@ struct blk_header* find_free_blk(uint32_t size) {
     if (free_blk == NULL) {
         return NULL;
     }
-    if (free_blk->actual_size < size) {
+    if (free_blk->actual_size > size) {
         free_list = free_blk->next;
         return free_blk;
     }
@@ -93,6 +136,7 @@ void* malloc(uint32_t size) {
         header->size = size;
         return (void*)((uint32_t)header + sizeof(struct blk_header));
     }
+
 
     struct page_header* tmp = page_list;
     while(tmp->next != NULL && tmp->size - tmp->used_size < align_size + sizeof(struct blk_header)) {

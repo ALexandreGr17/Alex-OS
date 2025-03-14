@@ -53,7 +53,7 @@ int32_t find_first_free_blocks(uint32_t num_blocks) {
         return -1;
     }
 
-    for (uint32_t i = 0; i < max_blocks / 32; i++) {
+    for (uint32_t i = 1; i < max_blocks / 32; i++) {
         if (memory_map[i] != 0xFFFFFFFF) {
             // At least on bit is not set in this 32bit chunk of memory
             for (int32_t j = 0; j < 32; j++) {
@@ -98,8 +98,7 @@ void init_physical_memory_region(uint32_t base_address, uint32_t size) {
         unset_block(align++);
         used_blocks--;
     }
-
-    set_block(0); // Protect the first block
+    delete_physical_memory_region(0, 0x1000);
 }
 
 void delete_physical_memory_region(uint32_t base_address, uint32_t size) {

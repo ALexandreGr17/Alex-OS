@@ -49,7 +49,6 @@ void read_line(int handle, uint32_t* size, void** out){
 
 	*size = 100;
 	char* buffer = calloc(*size, 1);
-
 	char c = 0;
 	uint32_t i = 0;
 	while(c != '\n'){

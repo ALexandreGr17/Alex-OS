@@ -28,6 +28,7 @@ int init_memory_management(boot_parameters_t* bootparams) {
     // Set certain regions/blocks as used or reserved
     printf("krenel location: 0x%x\n", bootparams->kernel_location);
     delete_physical_memory_region(bootparams->kernel_location, ARBITRARY_KERNEL_SIZE);
+    delete_physical_memory_region(0, 0x1000);
 
     print_physical_mem_info();
 
@@ -45,6 +46,9 @@ int init_memory_management(boot_parameters_t* bootparams) {
 
 void* allocate_new_page(uint32_t address, uint32_t nb_page) {
     void* base_address = allocate_blocks(nb_page);
+    if (base_address == NULL) {
+        return NULL;
+    }
     void* tmp_base_address = base_address;
     void* tmp_address = (void*)address;
     for (uint32_t i = 0; i < nb_page; i++, tmp_base_address += PAGE_SIZE, tmp_address += PAGE_SIZE) {

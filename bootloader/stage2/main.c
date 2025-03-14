@@ -68,7 +68,6 @@ void __attribute__((cdecl)) cstart(uint16_t bootDrive, uint32_t partition){
 	bootparams.partition_location = partition_info.partition_offset;
     bootparams.kernel_location = (uint32_t)kernel_entry;
     kernel_entry(&bootparams);
-
 end:
 	for(;;);
 }

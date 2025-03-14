@@ -1,3 +1,4 @@
+#include "ELF/ELF.h"
 #include "arch/i686/fdc.h"
 #include "disk.h"
 #include "errno.h"
@@ -83,27 +84,14 @@ void __attribute__((section(".entry"))) start(boot_parameters_t* bootparams){
     }
 
     printf("FAT init\n");
-//
-//	FAT_create_file(&disk, "/test/azer.txt");
-//	printf("------------------------------------------\n");
-//
-//	int handle = FAT_open(&disk, "test/azer.txt");
-//
-//	char* test = "Yo ca fonctionne\n";
-//	FAT_write(&disk, handle, strlen(test), (uint8_t*)test);
-//	FAT_seek(&disk, handle, 0, SEEK_SET);
-//	FAT_read(&disk, handle, strlen(test), (uint8_t*)test);
-//	close(handle);
-//
-//
-//	char* buffer = "Hello world";
-//	ata_write28(&atam0, 0, buffer, 11);
-//	ata_flush(&atam0);
-//	char buffer_read[12] = {0};
-//	ata_read28(&atam0, 0, buffer_read, 11);
-//	printf("\n%s\n", buffer_read);
-//	
-   term(disks);
+
+    uint8_t* test;
+    load_elf_file("bin/test.elf", &test);
+    printf("%x\n", test[0]);
+    printf("%x\n", test[1]);
+    clrscr();
+    ((void (*)())test)();
+    term(disks);
 
 
 end:

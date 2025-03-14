@@ -510,7 +510,6 @@ dir_entry_t* find_file(disk_t* disk, file_t* dir, char* filename){
 		}
 	}
 	dir_entry_t* entry = malloc(sizeof(dir_entry_t));
-
 	do {
 
 		if(!read_next_entry(disk, dir, entry)){
@@ -554,7 +553,7 @@ int FAT_open(disk_t* disk, char* path){
 	}
 
 	int handle = find_free_handle();
-	if(handle == 0){
+	if(handle == 0 && (handle - 3) >= MAX_OPEN_FILE){
 		errno = -2;
 		return 0;
 	}

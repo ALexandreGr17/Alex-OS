@@ -87,5 +87,6 @@ typedef struct {
 } prg_hdr_t;
 
 
+int load_elf_file(const char* filename, void** entry_point);
 
 #endif

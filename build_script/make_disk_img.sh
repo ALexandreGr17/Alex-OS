@@ -73,6 +73,11 @@ sudo cp ${BUILD_DIR}/kernel.elf /tmp/alexos
 sudo cp test.txt /tmp/alexos
 sudo mkdir /tmp/alexos/test
 sudo cp test.txt /tmp/alexos/test
+
+# adding programs
+sudo mkdir /tmp/alexos/bin
+sudo cp ${BUILD_DIR}/load/*.elf /tmp/alexos/bin
+
 sudo umount /tmp/alexos
 
 # destroy loopback device

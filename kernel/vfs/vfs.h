@@ -10,6 +10,11 @@ enum {
 	STDERR = 2,
 };
 
+enum {
+	SEEK_SET,
+	SEEK_CUR,
+	SEEK_END
+};
 
 void vfs_init(disk_t** disk, uint8_t nb_disk);
 

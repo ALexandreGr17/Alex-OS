@@ -3,7 +3,7 @@ SHELL=/bin/bash
 
 include ./build_script/config.mk
 
-.PHONY: all floppy_image kernel bootloader clean always run
+.PHONY: all floppy_image kernel bootloader clean always run progs
 
 all: floppy_image
 
@@ -22,7 +22,7 @@ $(BUILD_DIR)/main_floppy.img: bootloader kernel
 # Disk Image
 #
 
-disk_image: $(BUILD_DIR)/main_disk.raw
+disk_image: progs $(BUILD_DIR)/main_disk.raw
 
 $(BUILD_DIR)/main_disk.raw: bootloader kernel
 	@./build_script/make_disk_img.sh $@ $(MAKE_DISK_SIZE) $(FILESYSTEM)
@@ -54,6 +54,14 @@ $(BUILD_DIR)/kernel.elf: always
 
 
 #
+# programs
+#
+progs: $(BUILD_DIR)/load
+
+$(BUILD_DIR)/load: always
+	$(MAKE) -C ./load/ BUILD_DIR=$(abspath $(BUILD_DIR))
+
+#
 # Utils
 #
 always:
@@ -64,8 +72,8 @@ clean:
 	#$(MAKE) -C ./kernel BUILD_DIR=$(abspath $(BUILD_DIR)) clean
 	$(RM) -rf $(BUILD_DIR)
 
-run_disk: $(BUILD_DIR)/main_disk.raw
-	sudo qemu-system-x86_64 -device qemu-xhci -debugcon stdio -hda $<
+run_disk: progs $(BUILD_DIR)/main_disk.raw 
+	sudo qemu-system-x86_64 -device qemu-xhci -debugcon stdio -hda $(BUILD_DIR)/main_disk.raw 
 
 run: $(BUILD_DIR)/main_floppy.img
 	qemu-system-x86_64 -debugcon stdio -fda $< -hda ./disk_image_master.img
