@@ -15,5 +15,6 @@ int main(void) {
     putchr(2, 0, 'l');
     putchr(3, 0, 'l');
     putchr(4, 0, 'o');
+    // for(;;);
     return 0;
 }

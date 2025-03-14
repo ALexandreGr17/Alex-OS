@@ -1,10 +1,13 @@
 #include "ELF/ELF.h"
 #include "arch/i686/fdc.h"
+#include "arch/i686/io.h"
+#include "arch/i686/pic.h"
 #include "disk.h"
 #include "errno.h"
 #include <memory_management/virtual/virtual_memory_manager.h>
 #include <memory_management/physique/physical_memory_manager.h>
 #include "memory_management/memory_management.h"
+#include "process/process.h"
 #include "string/string.h"
 #include <stdint.h>
 #include <arch/i686/isr.h>
@@ -40,8 +43,23 @@ char* memory_reg_type(uint8_t type) {
     
     }
 }
+static disk_t* disks = NULL;
 
 void term(disk_t* disk);
+
+void i686_syscall_handler(Register* regs) {
+    printf("Syscall: 0x%x\n", regs->eax);
+    __asm__ volatile("sti");  // Réactiver les interruptions
+    if (disks != NULL) {
+        load_ctx();
+    __asm__ volatile("iret");
+    }
+    else {
+        printf("No disk\n");
+        i686_panic();
+    }
+}
+
 
 void __attribute__((section(".entry"))) start(boot_parameters_t* bootparams){
     memset(&__bss_start, 0, (&__end) - (&__bss_start));
@@ -58,6 +76,7 @@ void __attribute__((section(".entry"))) start(boot_parameters_t* bootparams){
 
 	HAL_Initialaize(bootparams);
 
+    i686_ISR_Registerhandler(0x80, i686_syscall_handler);
 
     printf("Hello world from kernel\n");
     printf("BootDevice: 0x%x\n", bootparams->BootDevice);
@@ -74,7 +93,7 @@ void __attribute__((section(".entry"))) start(boot_parameters_t* bootparams){
     	.disk_write = &ata_write28
     };
 
-    disk_t* disks = &disk;
+    disks = &disk;
     vfs_init(&disks, 1);
 
 
@@ -85,12 +104,6 @@ void __attribute__((section(".entry"))) start(boot_parameters_t* bootparams){
 
     printf("FAT init\n");
 
-    uint8_t* test;
-    load_elf_file("bin/test.elf", &test);
-    printf("%x\n", test[0]);
-    printf("%x\n", test[1]);
-    clrscr();
-    ((void (*)())test)();
     term(disks);
 
 
@@ -199,7 +212,14 @@ void term(disk_t* disk){
 		if(strcmp(buffer, "clear")){
 			clrscr();
 		}
-
+        
+        if (strcmp(buffer, "load")) {
+            void (*prg)() = NULL;
+            if (!load_elf_file(args, (void**)&prg) && prg != NULL) {
+                save_ctx();
+                prg();
+            }
+        }
 		free(buffer);
 	}
 }
