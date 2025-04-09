@@ -88,5 +88,6 @@ typedef struct {
 
 
 int load_elf_file(const char* filename, void** entry_point);
+int unload_elf_file(const char* filename);
 
 #endif

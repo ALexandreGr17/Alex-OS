@@ -51,8 +51,7 @@ void i686_syscall_handler(Register* regs) {
     printf("Syscall: 0x%x\n", regs->eax);
     __asm__ volatile("sti");  // Réactiver les interruptions
     if (disks != NULL) {
-        load_ctx();
-    __asm__ volatile("iret");
+        exit_process();
     }
     else {
         printf("No disk\n");
@@ -75,6 +74,7 @@ void __attribute__((section(".entry"))) start(boot_parameters_t* bootparams){
 	}
 
 	HAL_Initialaize(bootparams);
+    init_process_management();
 
     i686_ISR_Registerhandler(0x80, i686_syscall_handler);
 
@@ -104,8 +104,11 @@ void __attribute__((section(".entry"))) start(boot_parameters_t* bootparams){
 
     printf("FAT init\n");
 
-    term(disks);
+    // term(disks);
 
+    clrscr();
+    printf("\n");
+    exec("bin/test.elf");
 
 end:
 	for(;;);
@@ -215,10 +218,6 @@ void term(disk_t* disk){
         
         if (strcmp(buffer, "load")) {
             void (*prg)() = NULL;
-            if (!load_elf_file(args, (void**)&prg) && prg != NULL) {
-                save_ctx();
-                prg();
-            }
         }
 		free(buffer);
 	}
