@@ -16,6 +16,6 @@ struct process_list {
 int __attribute__((cdecl)) context_switch(struct process_context* old, struct process_context* new, int return_value);
 int exec(char* file);
 void init_process_management();
-void exit_process();
+void exit_process(int exit_code);
 
 #endif 

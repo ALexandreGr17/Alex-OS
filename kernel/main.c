@@ -1,7 +1,4 @@
-#include "ELF/ELF.h"
-#include "arch/i686/fdc.h"
-#include "arch/i686/io.h"
-#include "arch/i686/pic.h"
+#include <arch/i686/io.h>
 #include "disk.h"
 #include "errno.h"
 #include <memory_management/virtual/virtual_memory_manager.h>
@@ -47,19 +44,6 @@ static disk_t* disks = NULL;
 
 void term(disk_t* disk);
 
-void i686_syscall_handler(Register* regs) {
-    printf("Syscall: 0x%x\n", regs->eax);
-    __asm__ volatile("sti");  // Réactiver les interruptions
-    if (disks != NULL) {
-        exit_process();
-    }
-    else {
-        printf("No disk\n");
-        i686_panic();
-    }
-}
-
-
 void __attribute__((section(".entry"))) start(boot_parameters_t* bootparams){
     memset(&__bss_start, 0, (&__end) - (&__bss_start));
 	clrscr();
@@ -75,8 +59,6 @@ void __attribute__((section(".entry"))) start(boot_parameters_t* bootparams){
 
 	HAL_Initialaize(bootparams);
     init_process_management();
-
-    i686_ISR_Registerhandler(0x80, i686_syscall_handler);
 
     printf("Hello world from kernel\n");
     printf("BootDevice: 0x%x\n", bootparams->BootDevice);

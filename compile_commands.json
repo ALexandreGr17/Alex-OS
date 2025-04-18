@@ -322,12 +322,46 @@
       "-I./../libs/",
       "-c",
       "-o",
+      "/home/alexandre/projet/Alex-OS/bin/kernel/c/process/process.o",
+      "process/process.c"
+    ],
+    "directory": "/home/alexandre/projet/Alex-OS/kernel",
+    "file": "/home/alexandre/projet/Alex-OS/kernel/process/process.c",
+    "output": "/home/alexandre/projet/Alex-OS/bin/kernel/c/process/process.o"
+  },
+  {
+    "arguments": [
+      "/home/alexandre/projet/Alex-OS/toolchain/i686-elf/bin/i686-elf-gcc",
+      "-std=c99",
+      "-g",
+      "-ffreestanding",
+      "-I./",
+      "-I./../libs/",
+      "-c",
+      "-o",
       "/home/alexandre/projet/Alex-OS/bin/kernel/c/string/string.o",
       "string/string.c"
     ],
     "directory": "/home/alexandre/projet/Alex-OS/kernel",
     "file": "/home/alexandre/projet/Alex-OS/kernel/string/string.c",
     "output": "/home/alexandre/projet/Alex-OS/bin/kernel/c/string/string.o"
+  },
+  {
+    "arguments": [
+      "/home/alexandre/projet/Alex-OS/toolchain/i686-elf/bin/i686-elf-gcc",
+      "-std=c99",
+      "-g",
+      "-ffreestanding",
+      "-I./",
+      "-I./../libs/",
+      "-c",
+      "-o",
+      "/home/alexandre/projet/Alex-OS/bin/kernel/c/syscall/syscall.o",
+      "syscall/syscall.c"
+    ],
+    "directory": "/home/alexandre/projet/Alex-OS/kernel",
+    "file": "/home/alexandre/projet/Alex-OS/kernel/syscall/syscall.c",
+    "output": "/home/alexandre/projet/Alex-OS/bin/kernel/c/syscall/syscall.o"
   },
   {
     "arguments": [

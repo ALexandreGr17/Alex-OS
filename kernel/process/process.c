@@ -83,8 +83,6 @@ int exec(char* file) {
     return return_val;
 }
 
-void exit_process() {
-    uint32_t val = 0;
-    __asm__ volatile ("mov %%edi, %0" : "=r" (val) : : );
-    context_switch(get_ctx(current_pid), get_ctx(0), val);
+void exit_process(int exit_code) {
+    context_switch(get_ctx(current_pid), get_ctx(0), exit_code);
 }

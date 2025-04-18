@@ -16,7 +16,6 @@
 global context_switch
 context_switch:
     ; recupere la valeur de sortie
-    mov ecx, [esp + 0xc]
     ; Sauvegarder l'ancien contexte
     mov eax, [esp + 4]    ; struct context *old
     mov [eax], esp
@@ -27,6 +26,7 @@ context_switch:
     ; Sauver eip (adresse de retour)
     mov ecx, [esp]
     mov [eax + 20], ecx
+    mov ecx, [esp + 0xc]
 
     ; Restaurer le nouveau contexte
     mov eax, [esp + 8]    ; struct context *new

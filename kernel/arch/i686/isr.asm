@@ -15,7 +15,7 @@ i686_ISR%1:
 	jmp		isr_common
 %endmacro
 
-%include "arch/i686/isrs_gen.inc"
+%include "isrs_gen.inc"
 extern	i686_ISR_Handler
 isr_common:
 	pusha				; push edi, esi, ebp, esp, ebx, edx, ecx, eax

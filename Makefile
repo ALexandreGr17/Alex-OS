@@ -59,7 +59,7 @@ $(BUILD_DIR)/kernel.elf: always
 progs: $(BUILD_DIR)/load
 
 $(BUILD_DIR)/load: always
-	$(MAKE) -C ./load/ BUILD_DIR=$(abspath $(BUILD_DIR))
+	#$(MAKE) -C ./load/ BUILD_DIR=$(abspath $(BUILD_DIR))
 
 #
 # Utils
