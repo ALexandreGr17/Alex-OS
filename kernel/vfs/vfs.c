@@ -91,6 +91,9 @@ uint32_t write(int handle, uint32_t size, void* in){
 		return FAT_write(disks[0], handle, size, in);
 	}
 
+    if (handle == 1) {
+        printf("%s", in);
+    }
 	for(int i = 0; i < size; i++){
 		std_put(stds[handle], *(char*)in);
 		in++;

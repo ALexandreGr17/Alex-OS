@@ -19,6 +19,7 @@
 #include <filesystem/fat.h>
 #include "vfs/vfs.h"
 #include <arch/i686/acpi.h>
+#include "syscall/syscall.h"
 
 extern uint8_t __bss_start;
 extern uint8_t __end;
@@ -59,6 +60,7 @@ void __attribute__((section(".entry"))) start(boot_parameters_t* bootparams){
 
 	HAL_Initialaize(bootparams);
     init_process_management();
+    init_syscall_handler();
 
     printf("Hello world from kernel\n");
     printf("BootDevice: 0x%x\n", bootparams->BootDevice);
@@ -86,12 +88,7 @@ void __attribute__((section(".entry"))) start(boot_parameters_t* bootparams){
 
     printf("FAT init\n");
 
-    // term(disks);
-
-    clrscr();
-    printf("\n");
-    exec("bin/test.elf");
-
+    term(disks);
 end:
 	for(;;);
 }
@@ -199,7 +196,7 @@ void term(disk_t* disk){
 		}
         
         if (strcmp(buffer, "load")) {
-            void (*prg)() = NULL;
+            exec(args);
         }
 		free(buffer);
 	}

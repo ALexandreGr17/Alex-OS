@@ -86,14 +86,15 @@ mkdir -p /tmp/alexos
 sudo mount ${TARGET_PARTITION} /tmp/alexos
 sudo cp ${BUILD_DIR}/kernel.elf /tmp/alexos
 
-# sudo cp test.txt /tmp/alexos
-# sudo mkdir /tmp/alexos/test
-# sudo cp test.txt /tmp/alexos/test
-#
 # # adding programs
-# sudo mkdir /tmp/alexos/bin
-# sudo cp ${BUILD_DIR}/load/*.elf /tmp/alexos/bin
-#
+
+sudo mkdir /tmp/alexos/bin
+
+for filename in ${BUILD_DIR}/prgs/*; do
+     sudo cp $filename /tmp/alexos/bin/
+     echo $filename
+ done
+
 sudo umount /tmp/alexos
 
 # destroy loopback device

@@ -5,11 +5,11 @@
 
 void i686_syscall_handler(Register* regs) {
     __asm__ volatile("sti");  // Réactiver les interruptions
-
+    
     if (regs->eax == 4) {
         exit_process(regs->edi);
     }
-    else if (regs->eax == 0) {
+    else if (regs->eax == 1) {
         write(regs->edi, regs->edx, (char*)regs->esi);
     }
     else {
