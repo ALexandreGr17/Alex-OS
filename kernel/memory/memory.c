@@ -1,4 +1,6 @@
 #include "memory.h"
+#include "memory_management/memory_management.h"
+#include "memory_management/virtual/virtual_memory_manager.h"
 #include <stdint.h>
 #include <stdio.h>
 
@@ -24,3 +26,19 @@ uint8_t memcmp(const void *ptr1, const void *prt2, uint32_t n){
 	}
 	return 1;
 }
+
+void* mmap(void* address, uint32_t len) {
+    if (!address) {
+        address = find_free_page(NB_PAGE(len));
+    }
+
+    if (!address) {
+        return NULL;
+    }
+    return allocate_new_page((uint32_t)address, NB_PAGE(len));
+}
+
+void munmap(void* address, uint32_t len) {
+    deallocate_page((uint32_t)address, NB_PAGE(len));
+}
+

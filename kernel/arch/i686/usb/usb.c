@@ -1,3 +1,4 @@
+#include "arch/i686/usb/uhci.h"
 #include "stdio.h"
 #include <arch/i686/pci/pci.h>
 #include <stdint.h>
@@ -26,17 +27,6 @@ enum XHCI_OP_REG_OFF {
 	HCCPARMS2	= 0x1C
 };
 
-void XHCI_init(PCI_device_t *xhci_device){
-	uint8_t *bar = 0;
-	for (int i = 0; i < 6; i++){
-		if (xhci_device->bars[i].addr != 0){
-			bar = (uint8_t*)xhci_device->bars[i].addr;
-			break;
-		}
-	}
-	printf("CAPLENTH: 0x%x\n", *((uint8_t*)bar + CAPLENGTH));
-}
-
 void USB_init(){
 	PCI_device_t filter = {
 		.class_code = SERIAL_BUS_CONTROLLER,
@@ -54,10 +44,11 @@ void USB_init(){
 	for (int i = 0; i < nb_found; i++)
 	{
 		PCI_device_t *device = PCI_get_device_by_id(devices_id[i]);
-		printf("Controller 1: ");
+		printf("Controller %d: ", i);
 		switch (device->prog_if) {
 			case 0:
 				printf("UHCI\n");
+                uhci_init(device);
 				break;
 			case 0x10:
 				printf("OHCI\n");
@@ -67,7 +58,6 @@ void USB_init(){
 				break;
 			case 0x30:
 				printf("XHCI\n");
-				XHCI_init(device);
 				break;
 			case 0x80:
 				printf("Unspecified\n");

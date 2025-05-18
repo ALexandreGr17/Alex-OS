@@ -1,5 +1,5 @@
 AS=nasm
-SHELL=/bin/bash
+SHELL=/bin/sh
 
 include ./build_script/config.mk
 
@@ -65,7 +65,13 @@ clean:
 	$(RM) -rf $(BUILD_DIR)
 
 run_disk: $(BUILD_DIR)/main_disk.raw
-	sudo qemu-system-x86_64 -device qemu-xhci -debugcon stdio -hda $<
+	qemu-system-x86_64 \
+		-machine type=pc,accel=kvm,usb=off \
+	    -device piix3-usb-uhci,id=uhci \
+		-drive if=none,id=usbstick,file=usb-stick.img \
+		-device usb-storage,bus=uhci.0,drive=usbstick \
+		-hda $< \
+		-debugcon stdio
 
 run: $(BUILD_DIR)/main_floppy.img
 	qemu-system-x86_64 -debugcon stdio -fda $< -hda ./disk_image_master.img
@@ -76,8 +82,16 @@ debug:
 debug_disk: $(BUILD_DIR)/main_disk.raw
 	 # sudo qemu-system-x86_64 -device qemu-xhci -monitor stdio -hda $<
 	#bochs -f ./bochs_config_disk
-	qemu-system-i386 -hda $< -S -s &
+	#qemu-system-i386 -hda $< -S -s &
 	#gdb -nx -ix \ #./gdb_init_real_mode.txt \
 	#	-ex "target remote localhost:1234"\
 	#	-ex "break *0x7c00" \
 	#	-ex "continue"
+	qemu-system-x86_64 \
+		-machine type=pc,accel=kvm,usb=off \
+	    -device piix3-usb-uhci,id=uhci \
+		-drive if=none,id=usbstick,file=usb-stick.img \
+		-device usb-storage,bus=uhci.0,drive=usbstick \
+		-hda $< \
+		-monitor stdio
+

@@ -38,11 +38,11 @@ uint32_t PCI_controller_read(PCI_device_t* dev, uint8_t offset, uint8_t size) {
 	i686_outl(PCI_COMMAND_PORT, address);
 	uint32_t val = i686_inl(PCI_DATA_PORT) >> (offset & 0x3) * 8;
 	switch (size) {
-		case 1:
+		case BYTE:
 			return (uint8_t)val;
-		case 2:
+		case WORD:
 			return (uint16_t)val;
-		case 4:
+		case DWORD:
 			return (uint32_t)val;
 		default:
 			return 0;
@@ -66,13 +66,13 @@ void PCI_controller_write(PCI_device_t* dev, uint8_t offset, uint32_t value, uin
 	uint32_t mask;
 
 	switch (size) {
-		case 1:
+		case BYTE:
 			mask = 0xFF;
 			break;
-		case 2:
+		case WORD:
 			mask = 0xFFFF;
 			break;
-		case 4:
+		case DWORD:
 			mask = 0xFFFFFFFF;
 			break;
 	}
@@ -82,14 +82,8 @@ void PCI_controller_write(PCI_device_t* dev, uint8_t offset, uint32_t value, uin
 	oldval |= value;
 
 	i686_outl(PCI_COMMAND_PORT, address);
-	i686_outl(PCI_COMMAND_PORT, oldval);
+	i686_outl(PCI_DATA_PORT, oldval);
 }
-
-enum READ_SIZE {
-	BYTE = 1,
-	WORD = 2,
-	DWORD = 4,
-};
 
 void get_bar(PCI_device_t *dev) {
 	for(int i = 0; i < 6; i++){

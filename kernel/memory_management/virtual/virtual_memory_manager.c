@@ -98,10 +98,59 @@ uint8_t map_page(void* physical_address, void *virtual_address) {
     return 1;
 }
 
+void debug_address(void* address) {
+    printf("address: %x\n", address);
+    printf("PD index: %d\n", PD_INDEX((uint32_t)address));
+    printf("PT index: %d\n", PT_INDEX((uint32_t)address));
+}
+
 void unmap_page(void* virtual_address) {
     uint32_t* page = get_page((uint32_t)virtual_address);
     SET_FRAME(page, 0);
     UNSET_ATTRIBUTE(page, PAGE_TABLE_ENTRY_PRESENT);
+    __asm__ volatile("invlpg (%0)" : : "r" (virtual_address) : "memory");
+}
+
+void* find_free_page(uint32_t nb_page) {
+    page_directory* pd = current_page_dir;
+    void* base_addr = NULL;
+    uint32_t count = 0;
+    for (uint32_t i = 0; i < (3 * PAGE_SIZE) / sizeof(uint32_t); i++) {
+        uint32_t* entry = &pd->entries[i];
+        page_table* table = NULL;
+        if (!TST_ATTRIBUTE(entry, PAGE_TABLE_ENTRY_PRESENT)) {
+            // Page not present sp we are allocating it
+            table = (page_table*)allocate_blocks(1);
+            if (!table) {
+                return NULL;
+            }
+            memset(table, 0, sizeof(page_table));
+            SET_ATTRIBUTE(entry, PAGE_DIR_ENTRY_PRESENT);
+            SET_ATTRIBUTE(entry, PAGE_DIR_ENTRY_READ_WRITE);
+            SET_FRAME(entry, (uint32_t)table);
+        }
+        else {
+            table = (page_table*)PAGE_PHYS_ADDR(entry);
+        }
+        for (uint32_t j = 0; j < PAGE_SIZE / sizeof(uint32_t); j++) {
+            uint32_t* page = &table->entries[j];
+            if (!TST_ATTRIBUTE(page, PAGE_TABLE_ENTRY_PRESENT)) {
+                if (base_addr == NULL) {
+                    base_addr = (void*)((i << 22) | (j << 12));
+                }
+
+                if (count == nb_page) {
+                    return base_addr;
+                }
+                count++;
+            }
+            else {
+                base_addr = NULL;
+                count = 0;
+            }
+        }
+    }
+    return NULL;
 }
 
 uint8_t init_virtual_memory_manager(uint32_t kernel_address) {
@@ -179,3 +228,7 @@ uint8_t init_virtual_memory_manager(uint32_t kernel_address) {
     return 1;
 }
 
+void* get_phys_addr(uint32_t virt_addr) {
+    uint32_t* page = get_page(virt_addr);
+    return (void*)(PAGE_PHYS_ADDR(page) + (virt_addr & 0xFFF));
+}

@@ -18,6 +18,7 @@
 #include <filesystem/fat.h>
 #include "vfs/vfs.h"
 #include <arch/i686/acpi.h>
+#include <arch/i686/pit.h>
 
 extern uint8_t __bss_start;
 extern uint8_t __end;
@@ -82,7 +83,7 @@ void __attribute__((section(".entry"))) start(boot_parameters_t* bootparams){
 	    goto end;
     }
 
-    printf("FAT init\n");
+    printf("FAT init\n"); 
 //
 //	FAT_create_file(&disk, "/test/azer.txt");
 //	printf("------------------------------------------\n");
@@ -103,8 +104,7 @@ void __attribute__((section(".entry"))) start(boot_parameters_t* bootparams){
 //	ata_read28(&atam0, 0, buffer_read, 11);
 //	printf("\n%s\n", buffer_read);
 //	
-   term(disks);
-
+ //  term(disks);
 
 end:
 	for(;;);

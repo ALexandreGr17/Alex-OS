@@ -10,6 +10,7 @@
 #include <arch/i686/usb.h>
 #include <vfs/vfs.h>
 #include <arch/i686/acpi.h>
+#include <arch/i686/pit.h>
 
 void HAL_Initialaize(boot_parameters_t* bootparams){
 	i686_GDT_Initialize();
@@ -18,8 +19,9 @@ void HAL_Initialaize(boot_parameters_t* bootparams){
 	i686_IRQ_Initialize();
 	i686_Keyboard_init();
     init_memory_management(bootparams);
+    PIT_init();
 	// acpi_init();
-	// PCI_init();
-	// USB_init();
+	PCI_init();
+	USB_init();
 	//fdc_init();
 }

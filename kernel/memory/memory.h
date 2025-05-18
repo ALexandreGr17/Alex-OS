@@ -12,4 +12,6 @@ void* calloc(uint32_t size, uint32_t nmenb);
 void* realloc(void* ptr, uint32_t size);
 void free(void* ptr);
 
+void* mmap(void* address, uint32_t len);
+void munmap(void* address, uint32_t len);
 #endif

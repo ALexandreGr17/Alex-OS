@@ -39,6 +39,7 @@ void set_block(uint32_t bit) {
 void unset_block(uint32_t bit) {
     // Divide bit by 32 to get 32bit chunk of memory containing bit to be set
     // Shift 1 by remainder of bit divided by 32 to get bit ti set within the 32 bit chunk
+
     memory_map[bit / 32] &= ~(1 << (bit % 32));
 }
 
@@ -109,6 +110,7 @@ void delete_physical_memory_region(uint32_t base_address, uint32_t size) {
         set_block(align++);
         used_blocks--;
     }
+    set_block(0);
 }
 
 uint32_t* allocate_blocks(uint32_t num_blocks) {
@@ -136,6 +138,7 @@ void free_blocks(uint32_t *address, uint32_t num_blocks) {
     }
 
     used_blocks -= num_blocks;
+    set_block(0);
 }
 
 void print_physical_mem_info() {

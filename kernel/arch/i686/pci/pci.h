@@ -42,6 +42,13 @@ enum FILTER_MASK {
 	PROG_IF = 16,
 };
 
+
+enum READ_SIZE {
+	BYTE = 1,
+	WORD = 2,
+	DWORD = 4,
+};
+
 typedef struct {
 	enum BAR_TYPE type;
 	enum BAR_SIZE size;
@@ -67,4 +74,8 @@ void PCI_init();
 int PCI_get_nb_device();
 int PCI_get_device_by_filter(PCI_device_t *filter, char mask, int *id_out, int size);
 PCI_device_t *PCI_get_device_by_id(int id);
+uint32_t PCI_controller_read(PCI_device_t* dev, uint8_t offset, uint8_t size);
+void PCI_controller_write(PCI_device_t* dev, uint8_t offset, uint32_t value, uint8_t size);
+void print_device(PCI_device_t* dev);
+
 #endif

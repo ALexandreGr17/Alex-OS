@@ -9,6 +9,7 @@
 
 
 #define MEMORY_MAP_LOCATION 0x30000
+#define MEMORY_MAP_SIZE(size) (size / BLOCK_SIZE / 8)
 #define ARBITRARY_KERNEL_SIZE 0x9000
 
 int init_memory_management(boot_parameters_t* bootparams) {
@@ -28,17 +29,12 @@ int init_memory_management(boot_parameters_t* bootparams) {
     // Set certain regions/blocks as used or reserved
     printf("krenel location: 0x%x\n", bootparams->kernel_location);
     delete_physical_memory_region(bootparams->kernel_location, ARBITRARY_KERNEL_SIZE);
+    delete_physical_memory_region(MEMORY_MAP_LOCATION, MEMORY_MAP_SIZE(total_memory));
 
     print_physical_mem_info();
 
     printf("Initialize paging\n");
     int i = init_virtual_memory_manager(bootparams->kernel_location);
-
-    
-
-    // TODO: 
-    //  identity mapping
-    //  Kmalloc, Kcalloc, Kfree, Krealloc (kernel version)
 
     return i;
 }
