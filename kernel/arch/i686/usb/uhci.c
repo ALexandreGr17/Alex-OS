@@ -1,10 +1,11 @@
 #include "uhci.h"
 #include "arch/i686/io.h"
-#include "arch/i686/isr.h"
+#include "arch/i686/irq.h"
 #include "arch/i686/pic.h"
 #include "arch/i686/pit.h"
 #include "arch/i686/pci/pci.h"
 #include "memory/memory.h"
+#include "memory/dma_allocator.h"
 #include "memory_management/memory_management.h"
 #include "memory_management/virtual/virtual_memory_manager.h"
 #include <stdint.h>
@@ -105,8 +106,102 @@ struct UHCI_qh_s {
     uint32_t vertical_ptr;
 };
 
+#define MAX_UHCI_CTRL 5
+
+static uhci_ctrl_t* ctrl_list[MAX_UHCI_CTRL];
+static uint32_t nb_ctrl = 0;
+static uint8_t* data = NULL;
+
+void handle_device_descriptor(uint8_t* data) {
+    uint16_t vendor_id  = data[8] | (data[9] << 8);
+    uint16_t product_id = data[10] | (data[11] << 8);
+    uint8_t device_class = data[4];
+    uint8_t max_packet_size = data[7];
+    uint16_t usb_version = data[2] | (data[3] << 8);
+    uint16_t device_release = data[12] | (data[13] << 8);
+    uint8_t manufacturer_str_idx = data[14];
+    uint8_t product_str_idx = data[15];
+    uint8_t serial_str_idx = data[16];
+    uint8_t num_configurations = data[17];
+
+
+    printf("USB Device Descriptor:\n");
+    printf("  Vendor ID: 0x%x\n", vendor_id);
+    printf("  Product ID: 0x%x\n", product_id);
+    printf("  Class: 0x%x\n", device_class);
+    printf("  Max Packet Size: %d bytes\n", max_packet_size);
+    printf("  USB Version: %x.%02x\n", (usb_version >> 8), (usb_version & 0xFF));
+    printf("  Device Release: %x.%02x\n", (device_release >> 8), (device_release & 0xFF));
+    printf("  Manufacturer String Index: %d\n", manufacturer_str_idx);
+    printf("  Product String Index: %d\n", product_str_idx);
+    printf("  Serial String Index: %d\n", serial_str_idx);
+    printf("  Number of Configurations: %d\n", num_configurations);
+}
+
 void i686_UHCI_handler(Register* regs) {
-    printf("yay\n");
+
+    i686_PIC_SendEOI(11);
+    for (uint32_t i = 0; i < nb_ctrl; i++) {
+        uint16_t usbsts = i686_inw(ctrl_list[i]->port + USBSTS);
+        if (usbsts & UHCI_STS_INT) {
+            i686_outw(ctrl_list[i]->port + USBSTS, usbsts);
+            uhci_ctrl_debug(ctrl_list[i]);
+            handle_device_descriptor(data);
+        }
+    }
+
+}
+
+
+#define DEBUG_ADDR(addr) (printf(#addr " = %x, " #addr "_phys = %x\n", addr, (uint32_t)get_phys_addr((uint32_t)addr)))
+
+void send_get_descriptor_cmd(uhci_ctrl_t* ctrl, int port) {
+
+    uint8_t* setup_packet = dma_alloc(8, 1);
+    setup_packet[0] = 0x80;       // bmRequestType (Host → Device, standard, device)
+    setup_packet[1] = 0x06;       // bRequest (GET_DESCRIPTOR)
+    setup_packet[2] = 0x00;
+    setup_packet[3] = 0x01; // wValue (Descriptor Type = Device, Index 0)
+    setup_packet[4] = 0x00;
+    setup_packet[5] = 0x00; // wIndex (0)
+    setup_packet[6] = 0x12;
+    setup_packet[7] = 0x00;  // wLength (18 bytes)
+
+    DEBUG_ADDR(setup_packet);
+    struct UHCI_td_s* td_setup =  dma_alloc(sizeof(struct UHCI_td_s), 0x10);
+    td_setup->next_descriptor = 0x1;
+    td_setup->status = (1 << 23);
+    td_setup->packet_header = 0x2D | (7 << 21);
+    td_setup->buffer_address = (uint32_t)get_phys_addr((uint32_t)setup_packet);
+
+    struct UHCI_td_s* td_in = dma_alloc(sizeof(struct UHCI_td_s), 0x10);
+    uint8_t* data_buffer = calloc(18, 1);
+    data = data_buffer;
+    td_in->next_descriptor = 0x1;
+    td_in->status = (1 << 23);
+    td_in->packet_header = 0x69 | (1 << 19) | (17 << 21);
+    td_in->buffer_address = (uint32_t)get_phys_addr((uint32_t)data_buffer);
+
+    struct UHCI_td_s* td_out = dma_alloc(sizeof(struct UHCI_td_s), 0x10);
+    td_out->next_descriptor = 1;
+    td_out->status = (1 << 23) | (1 << 24);
+    td_out->packet_header = 0xE1 | (1 << 19);
+    td_out->buffer_address = 0;
+
+    td_setup->next_descriptor = (uint32_t)get_phys_addr((uint32_t)td_in);
+    td_in->next_descriptor = (uint32_t)get_phys_addr((uint32_t)td_out);
+
+    struct UHCI_qh_s* qh = dma_alloc(sizeof(struct UHCI_qh_s), 0x10);
+    qh->vertical_ptr = (uint32_t)get_phys_addr((uint32_t)td_setup);
+    qh->horizontal_ptr = 1;
+ 
+    DEBUG_ADDR(td_setup);
+    DEBUG_ADDR(td_in);
+    DEBUG_ADDR(td_out);
+    DEBUG_ADDR(qh);
+
+    uint32_t frame_entry = (uint32_t)get_phys_addr((uint32_t)qh) | (1 << 1);
+    ctrl->frame_list[0] = frame_entry;
 }
 
 int uhci_handle_connection(uhci_ctrl_t* ctrl, int port) {
@@ -159,6 +254,7 @@ void uhci_check_port(uhci_ctrl_t* ctrl) {
     }
 
     uhci_ctrl_debug(ctrl);
+    send_get_descriptor_cmd(ctrl, 0);
 }
 
 uhci_ctrl_t* uhci_init(PCI_device_t* dev) {
@@ -222,7 +318,9 @@ uhci_ctrl_t* uhci_init(PCI_device_t* dev) {
     legacy |= UHCI_CMD_RUN;
     i686_outw(ctrl->port, legacy);
 
-    i686_ISR_Registerhandler(ctrl->dev->int_line + 0x20, i686_UHCI_handler);
+    i686_IRQ_RegisterHandler(ctrl->dev->int_line, i686_UHCI_handler);
 
+    ctrl_list[nb_ctrl] = ctrl;
+    nb_ctrl++;
     uhci_check_port(ctrl);
 }
