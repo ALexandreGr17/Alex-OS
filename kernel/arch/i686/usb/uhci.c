@@ -138,6 +138,7 @@ void handle_device_descriptor(uint8_t* data) {
     printf("  Number of Configurations: %d\n", num_configurations);
 }
 
+#define DEBUG_ADDR(addr) (printf(#addr " = %x, " #addr "_phys = %x\n", addr, (uint32_t)get_phys_addr((uint32_t)addr)))
 void i686_UHCI_handler(Register* regs) {
 
     i686_PIC_SendEOI(11);
@@ -152,56 +153,105 @@ void i686_UHCI_handler(Register* regs) {
 
 }
 
+enum USB_PACKET_TYPE {
+    SETUP = 0x2D,
+    IN = 0x69,
+    OUT = 0xE1
+};
 
-#define DEBUG_ADDR(addr) (printf(#addr " = %x, " #addr "_phys = %x\n", addr, (uint32_t)get_phys_addr((uint32_t)addr)))
+typedef struct usb_packet_s {
+    struct usb_packet_s* next;
+    enum USB_PACKET_TYPE type;
+    uint8_t* data;
+    uint32_t data_len;
+    uint32_t status;
+} usb_packet_t;
+
+typedef struct __attribute__((packed)) usb_setup_packet_s {
+    uint8_t request_type;
+    uint8_t request;
+    uint16_t value;
+    uint16_t index;
+    uint16_t length;
+} usb_setup_packet_t;
+
+struct UHCI_td_s* construct_td(usb_packet_t* packet, uint8_t toggle) {
+    struct UHCI_td_s* td = dma_alloc(sizeof(struct UHCI_td_s), 0x10);
+    td->status = packet->status;
+    td->packet_header = packet->type | (toggle << 19) | (packet->data_len > 0 ? (packet->data_len - 1) << 21  : 0);
+    td->buffer_address = (uint32_t)get_phys_addr((uint32_t)packet->data);
+    if (packet->next == NULL) {
+        td->next_descriptor = 1;
+        return td;
+    }
+    td->next_descriptor = (uint32_t)get_phys_addr((uint32_t)construct_td(packet->next, !toggle));
+    return td;
+}
+
+void send_packets(uhci_ctrl_t* ctrl, usb_packet_t* packet) {
+    if (packet == NULL || ctrl == NULL){
+        return;
+    }
+    struct UHCI_td_s* td = construct_td(packet, 0);
+    struct UHCI_qh_s* qh = dma_alloc(sizeof(struct UHCI_qh_s), 0x10);
+    qh->vertical_ptr = (uint32_t)get_phys_addr((uint32_t)td);
+    qh->horizontal_ptr = 1;
+    
+    uint32_t frame_entry = (uint32_t)get_phys_addr((uint32_t)qh) | (1 << 1);
+    ctrl->frame_list[0] = frame_entry;
+};
 
 void send_get_descriptor_cmd(uhci_ctrl_t* ctrl, int port) {
 
-    uint8_t* setup_packet = dma_alloc(8, 1);
-    setup_packet[0] = 0x80;       // bmRequestType (Host → Device, standard, device)
-    setup_packet[1] = 0x06;       // bRequest (GET_DESCRIPTOR)
-    setup_packet[2] = 0x00;
-    setup_packet[3] = 0x01; // wValue (Descriptor Type = Device, Index 0)
-    setup_packet[4] = 0x00;
-    setup_packet[5] = 0x00; // wIndex (0)
-    setup_packet[6] = 0x12;
-    setup_packet[7] = 0x00;  // wLength (18 bytes)
+    usb_setup_packet_t* setup_packet_data = dma_alloc(sizeof(usb_setup_packet_t), 1);
+    setup_packet_data->request_type = 0x80;
+    setup_packet_data->request = 0x06;
+    setup_packet_data->value = 0x0100;
+    setup_packet_data->index = 0;
+    setup_packet_data->length = 0x12;
 
-    DEBUG_ADDR(setup_packet);
-    struct UHCI_td_s* td_setup =  dma_alloc(sizeof(struct UHCI_td_s), 0x10);
-    td_setup->next_descriptor = 0x1;
-    td_setup->status = (1 << 23);
-    td_setup->packet_header = 0x2D | (7 << 21);
-    td_setup->buffer_address = (uint32_t)get_phys_addr((uint32_t)setup_packet);
+    usb_packet_t* packet_out = malloc(sizeof(usb_packet_t));
+    packet_out->next = 0;
+    packet_out->status = (1 << 23) | (1 << 24);
+    packet_out->type = OUT;
+    packet_out->data_len = 0;
+    packet_out->data = NULL;
 
-    struct UHCI_td_s* td_in = dma_alloc(sizeof(struct UHCI_td_s), 0x10);
-    uint8_t* data_buffer = calloc(18, 1);
-    data = data_buffer;
-    td_in->next_descriptor = 0x1;
-    td_in->status = (1 << 23);
-    td_in->packet_header = 0x69 | (1 << 19) | (17 << 21);
-    td_in->buffer_address = (uint32_t)get_phys_addr((uint32_t)data_buffer);
+    data = dma_alloc(18, 0x10);
 
-    struct UHCI_td_s* td_out = dma_alloc(sizeof(struct UHCI_td_s), 0x10);
-    td_out->next_descriptor = 1;
-    td_out->status = (1 << 23) | (1 << 24);
-    td_out->packet_header = 0xE1 | (1 << 19);
-    td_out->buffer_address = 0;
+    usb_packet_t* packet_in = malloc(sizeof(usb_packet_t));
+    packet_in->next = packet_out;
+    packet_in->type = IN;
+    packet_in->status = (1 << 23);
+    packet_in->data = data;
+    packet_in->data_len = 18;
 
-    td_setup->next_descriptor = (uint32_t)get_phys_addr((uint32_t)td_in);
-    td_in->next_descriptor = (uint32_t)get_phys_addr((uint32_t)td_out);
+    usb_packet_t* setup_packet = malloc(sizeof(usb_packet_t));
+    setup_packet->next = packet_in;
+    setup_packet->data = (uint8_t*)setup_packet_data;
+    setup_packet->data_len = sizeof(usb_setup_packet_t);
+    setup_packet->type = SETUP;
+    setup_packet->status = (1 << 23);
 
-    struct UHCI_qh_s* qh = dma_alloc(sizeof(struct UHCI_qh_s), 0x10);
-    qh->vertical_ptr = (uint32_t)get_phys_addr((uint32_t)td_setup);
-    qh->horizontal_ptr = 1;
- 
-    DEBUG_ADDR(td_setup);
-    DEBUG_ADDR(td_in);
-    DEBUG_ADDR(td_out);
-    DEBUG_ADDR(qh);
+    send_packets(ctrl, setup_packet);
 
-    uint32_t frame_entry = (uint32_t)get_phys_addr((uint32_t)qh) | (1 << 1);
-    ctrl->frame_list[0] = frame_entry;
+}
+
+void send_set_address_cmd(uhci_ctrl_t* ctrl) {
+    usb_setup_packet_t* setup_packet_data = malloc(sizeof(usb_setup_packet_t));
+    setup_packet_data->request_type = 0;
+    setup_packet_data->request_type = 5;
+    setup_packet_data->value = 1;
+    setup_packet_data->index = 0;
+    setup_packet_data->length = 0;
+
+    usb_packet_t* packet_setup = malloc(sizeof(usb_packet_t));
+    packet_setup->next = NULL;
+    packet_setup->type = SETUP;
+    packet_setup->data = (uint8_t*)setup_packet_data;
+    packet_setup->data_len = sizeof(usb_setup_packet_t);
+    packet_setup->status = (1 << 23);
+    send_packets(ctrl, packet_setup);
 }
 
 int uhci_handle_connection(uhci_ctrl_t* ctrl, int port) {
@@ -255,6 +305,7 @@ void uhci_check_port(uhci_ctrl_t* ctrl) {
 
     uhci_ctrl_debug(ctrl);
     send_get_descriptor_cmd(ctrl, 0);
+    //send_set_address_cmd(ctrl);
 }
 
 uhci_ctrl_t* uhci_init(PCI_device_t* dev) {
