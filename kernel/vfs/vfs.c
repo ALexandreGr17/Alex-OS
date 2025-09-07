@@ -24,7 +24,7 @@ void vfs_init(disk_t** disk, uint8_t nb_disk){
 	}
 }
 
-int open(char* path, uint8_t create){
+int open(const char* path, uint8_t create){
 	char* tmp_path = calloc(strlen(path) + 1, 1);
 	strcpy(tmp_path, path);
 
@@ -49,7 +49,6 @@ void read_line(int handle, uint32_t* size, void** out){
 
 	*size = 100;
 	char* buffer = calloc(*size, 1);
-
 	char c = 0;
 	uint32_t i = 0;
 	while(c != '\n'){
@@ -92,6 +91,9 @@ uint32_t write(int handle, uint32_t size, void* in){
 		return FAT_write(disks[0], handle, size, in);
 	}
 
+    if (handle == 1) {
+        printf("%s", in);
+    }
 	for(int i = 0; i < size; i++){
 		std_put(stds[handle], *(char*)in);
 		in++;

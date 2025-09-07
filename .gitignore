@@ -2,3 +2,4 @@ bin/
 toolchain/
 tags*
 .cache/
+shell.nix

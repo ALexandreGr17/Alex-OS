@@ -2,9 +2,24 @@
 
 set -e
 
+# Debug: Affiche les paramètres reçus
+echo "Script called with: $@" >&2
+echo "Current dir: $(pwd)" >&2
+echo "Build dir: $4" >&2
+
+# Vérification des fichiers requis
+for f in "$4/boot.bin" "$4/stage2.bin" "$4/kernel.elf"; do
+    if [ ! -f "$f" ]; then
+        echo "ERROR: Missing file $f" >&2
+        exit 1
+    fi
+done
+
+
 TARGET=$1
 SIZE=$2
 FS_STR=$3
+BUILD_DIR=$4
 
 STAGE1_STAGE2_LOCATION_OFFSET=480
 
@@ -70,9 +85,16 @@ echo "Copying files to ${TARGET_PARTITION} (mounted on /tmp/alexos)..."
 mkdir -p /tmp/alexos
 sudo mount ${TARGET_PARTITION} /tmp/alexos
 sudo cp ${BUILD_DIR}/kernel.elf /tmp/alexos
-sudo cp test.txt /tmp/alexos
-sudo mkdir /tmp/alexos/test
-sudo cp test.txt /tmp/alexos/test
+
+# # adding programs
+
+sudo mkdir /tmp/alexos/bin
+
+for filename in ${BUILD_DIR}/prgs/*; do
+     sudo cp $filename /tmp/alexos/bin/
+     echo $filename
+ done
+
 sudo umount /tmp/alexos
 
 # destroy loopback device

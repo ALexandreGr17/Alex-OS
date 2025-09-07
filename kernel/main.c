@@ -1,9 +1,10 @@
-#include "arch/i686/fdc.h"
+#include <arch/i686/io.h>
 #include "disk.h"
 #include "errno.h"
-#include <memory_management/virtual/virtual_memory_manager.h>
-#include <memory_management/physique/physical_memory_manager.h>
-#include "memory_management/memory_management.h"
+#include <memory/management/virtual/virtual_memory_manager.h>
+#include <memory/management/physique/physical_memory_manager.h>
+#include "memory/management/memory_management.h"
+#include "process/process.h"
 #include "string/string.h"
 #include <stdint.h>
 #include <arch/i686/isr.h>
@@ -12,13 +13,14 @@
 #include <memory/memory.h>
 #include <hal/hal.h>
 #include <arch/i686/irq.h>
-#include <arch/i686/keyboard.h>
-#include <arch/i686/pci/pci.h>
-#include <arch/i686/ata.h>
+#include <driver/keyboard/keyboard.h>
+#include <driver/pci/pci.h>
+#include <driver/ata/ata.h>
 #include <filesystem/fat.h>
 #include "vfs/vfs.h"
-#include <arch/i686/acpi.h>
-#include <arch/i686/pit.h>
+#include <driver/acpi/acpi.h>
+#include <driver/pit/pit.h>
+#include "syscall/syscall.h"
 
 extern uint8_t __bss_start;
 extern uint8_t __end;
@@ -40,6 +42,7 @@ char* memory_reg_type(uint8_t type) {
     
     }
 }
+static disk_t* disks = NULL;
 
 void term(disk_t* disk);
 
@@ -57,7 +60,8 @@ void __attribute__((section(".entry"))) start(boot_parameters_t* bootparams){
 	}
 
 	HAL_Initialaize(bootparams);
-
+    init_process_management();
+    init_syscall_handler();
 
     printf("Hello world from kernel\n");
     printf("BootDevice: 0x%x\n", bootparams->BootDevice);
@@ -74,7 +78,7 @@ void __attribute__((section(".entry"))) start(boot_parameters_t* bootparams){
     	.disk_write = &ata_write28
     };
 
-    disk_t* disks = &disk;
+    disks = &disk;
     vfs_init(&disks, 1);
 
 
@@ -106,6 +110,7 @@ void __attribute__((section(".entry"))) start(boot_parameters_t* bootparams){
 //	
  //  term(disks);
 
+    term(disks);
 end:
 	for(;;);
 }
@@ -211,7 +216,10 @@ void term(disk_t* disk){
 		if(strcmp(buffer, "clear")){
 			clrscr();
 		}
-
+        
+        if (strcmp(buffer, "load")) {
+            exec(args);
+        }
 		free(buffer);
 	}
 }

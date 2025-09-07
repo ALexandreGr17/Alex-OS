@@ -11,7 +11,7 @@ void* malloc(uint32_t size);
 void* calloc(uint32_t size, uint32_t nmenb);
 void* realloc(void* ptr, uint32_t size);
 void free(void* ptr);
+void debug_free_list();
+void debug_page_list();
 
-void* mmap(void* address, uint32_t len);
-void munmap(void* address, uint32_t len);
 #endif

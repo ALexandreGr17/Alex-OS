@@ -3,12 +3,7 @@
 
 #include <stdint.h>
 #include <disk.h>
-
-enum {
-	SEEK_SET,
-	SEEK_CUR,
-	SEEK_END
-};
+#include <vfs/vfs.h>
 
 uint8_t FAT_init(disk_t* disk);
 

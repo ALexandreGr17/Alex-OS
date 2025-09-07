@@ -1,5 +1,5 @@
-#include <memory_management/physique/physical_memory_manager.h>
-#include <memory_management/virtual/virtual_memory_manager.h>
+#include "./management/physique/physical_memory_manager.h"
+#include "./management/virtual/virtual_memory_manager.h"
 #include <stdint.h>
 #include <stdio.h>
 

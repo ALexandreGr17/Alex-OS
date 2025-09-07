@@ -1,16 +1,16 @@
 #include "hal.h"
-#include "memory_management/memory_management.h"
+#include "memory/management/memory_management.h"
 #include <arch/i686/gdt.h>
 #include <arch/i686/idt.h>
 #include <arch/i686/isr.h>
 #include <arch/i686/irq.h>
-#include <arch/i686/keyboard.h>
-#include <arch/i686/pci/pci.h>
-#include <arch/i686/fdc.h>
-#include <arch/i686/usb.h>
+#include <driver/keyboard/keyboard.h>
+#include <driver/pci/pci.h>
+#include <driver/fdc/fdc.h>
+#include <driver/usb/usb.h>
 #include <vfs/vfs.h>
-#include <arch/i686/acpi.h>
-#include <arch/i686/pit.h>
+#include <driver/acpi/acpi.h>
+#include <driver/pit/pit.h>
 
 void HAL_Initialaize(boot_parameters_t* bootparams){
 	i686_GDT_Initialize();

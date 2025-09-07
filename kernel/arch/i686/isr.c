@@ -43,7 +43,7 @@ static const char* const g_Exceptions[] = {
 };
 
 
-void i686_ISR_InitializeGates();
+extern void i686_ISR_InitializeGates();
 
 void i686_ISR_Initialize(){
 	i686_ISR_InitializeGates();
@@ -56,7 +56,12 @@ void __attribute__((cdecl)) i686_ISR_Handler(Register* regs){
 		g_ISRHandlers[regs->interrupt](regs);
 	}
 	else if(regs->interrupt >= 32){
-		printf("Unhandled interrupt %d!\n", regs->interrupt);
+		printf("Unhandled interrupt %x!\n", regs->interrupt);
+		printf("	eax=0x%x	ebx=0x%x	ecx=0x%x	edx=0x%x	esi=0x%x	edi=0x%x\n", 
+				regs->eax, regs->ebx, regs->ecx, regs->edx, regs->esi, regs->edi);
+		printf("	esp=0x%x    ebp=0x%x	eip=0x%x	eflags=0x%x		cs=0x%x		ds=0x%x     ss=0x%x\n",
+				regs->esp, regs->ebp, regs->eip, regs->eflags, regs->cs, regs->ds, regs->ss);
+		printf("	interrupt=0x%X		errorcode=0x%x\n", regs->interrupt, regs->error);
 	}
 	else {
 		printf("Unhandled Exception %d %s\n", regs->interrupt, g_Exceptions[regs->interrupt]);

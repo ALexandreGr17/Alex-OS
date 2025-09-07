@@ -10,10 +10,15 @@ enum {
 	STDERR = 2,
 };
 
+enum {
+	SEEK_SET,
+	SEEK_CUR,
+	SEEK_END
+};
 
 void vfs_init(disk_t** disk, uint8_t nb_disk);
 
-int open(char* path, uint8_t create);
+int open(const char* path, uint8_t create);
 uint32_t read(int handle, uint32_t size, void* out);
 uint32_t write(int handle, uint32_t size, void* in);
 void close(int handle);
