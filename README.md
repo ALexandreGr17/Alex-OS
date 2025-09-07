@@ -18,15 +18,15 @@ DONE:
 - [x] VFS (basique)
 - [x] Terminal
 - [x] Paging
+- [X] ELF support
+- [X] syscall
 
 TODO:
-- [ ] USB
-- [ ] VFS (multi disk)
 - [ ] userland
-- [ ] syscall
-- [ ] ELF support
+- [ ] VFS (multi disk)
 - [ ] EXT2 support
 - [ ] VFS (multi file system)
+- [ ] USB
 - [ ] shell
 - [ ] text editor
 - [ ] assembleur
