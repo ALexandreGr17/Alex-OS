@@ -10,6 +10,14 @@
 
 page_directory* current_page_dir = NULL;
 
+struct page_directory_vec_s {
+    page_directory** vec;
+    uint32_t size;
+    uint32_t cap;
+};
+
+struct page_directory_vec_s* page_dir_vec = NULL;
+
 void i686_Page_fault_handler(Register* regs) {
     printf("Page Fault\n");
     printf("Bad address: 0x%x\n", i686_get_cr2());
@@ -98,11 +106,53 @@ uint8_t map_page(void* physical_address, void *virtual_address) {
     return 1;
 }
 
+void* find_free_page() {
+    page_directory *pd = current_page_dir;
+    for (uint32_t i = 0; i < (3 * PAGE_SIZE) / sizeof(uint32_t); i++) {
+        uint32_t* entry = &pd->entries[i];
+        page_table* table = NULL;
+        if (!TST_ATTRIBUTE(entry, PAGE_TABLE_ENTRY_PRESENT)) {
+            // Page not present so we are allocating it
+             table = (page_table*)allocate_blocks(1);
+            if (!table) {
+                return 0; // OOM
+            }
+            memset(table, 0, sizeof(page_table));
+        }
+        else {
+            table = (page_table*)PAGE_PHYS_ADDR(entry);
+        }
+        for (uint32_t j = 0; j < PAGE_SIZE / sizeof(uint32_t); j++) {
+            uint32_t* page = &table->entries[0];
+            if (!TST_ATTRIBUTE(page, PAGE_TABLE_ENTRY_PRESENT)) {
+                return page;
+            }
+        }
+    }
+    return NULL; // OOM
+}
+
 void unmap_page(void* virtual_address) {
     uint32_t* page = get_page((uint32_t)virtual_address);
     SET_FRAME(page, 0);
     UNSET_ATTRIBUTE(page, PAGE_TABLE_ENTRY_PRESENT);
 }
+
+struct page_directory_vec_s* page_dir_vec_init() {
+    struct page_directory_vec_s* vec = calloc(sizeof(struct page_directory_vec_s), 1);
+    vec->cap = 10;
+    return vec;
+}
+
+void page_dir_vec_append(struct page_directory_vec_s* vec, page_directory* page_dir) {
+    if (vec->size >= vec->cap) {
+        vec->cap += 10;
+        vec->vec = realloc(vec->vec, vec->cap);
+    }
+    vec->vec[vec->size] = page_dir;
+    vec->size++;
+}
+
 
 uint8_t init_virtual_memory_manager(uint32_t kernel_address) {
     page_directory* dir = (page_directory*)allocate_blocks(3);
@@ -176,6 +226,10 @@ uint8_t init_virtual_memory_manager(uint32_t kernel_address) {
     // Enable paging: Set paging bit (31) and protection enable bit (0) of CR0
     i686_enable_paging();
 
+    page_dir_vec = page_dir_vec_init();
     return 1;
 }
 
+void new_page_dir() {
+
+}

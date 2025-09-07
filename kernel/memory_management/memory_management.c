@@ -71,3 +71,18 @@ void deallocate_page(uint32_t address, uint32_t nb_page) {
         unmap_page((void*)address);
     }
 }
+
+void* mmap(void* address, uint32_t len) {
+    if (address == NULL) {
+        address = find_free_page();
+    }
+    if (address == NULL) {
+        return NULL;
+    }
+    allocate_new_page((uint32_t)address, NB_PAGE(len));
+    return address;
+}
+
+void munmap(void* address, uint32_t len) {
+    deallocate_page((uint32_t)address, NB_PAGE(len));
+}
