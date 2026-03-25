@@ -1,6 +1,0 @@
-name,eax,edi,esi,edx
-read,0x00,uint32_t fd,char* buf,size_t count
-write,0x01,uint32_t fd,char* buf,size_t count
-open,0x02,char* filename,-,-
-close,0x03,uint32_t fd,-,-
-exit,0x04,uint32_t exit_code,-,-
