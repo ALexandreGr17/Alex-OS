@@ -2,4 +2,11 @@ bin/
 toolchain/
 tags*
 .cache/
+.zig-cache/
+build/
+*.bin
+*.o
+*.a
+*.elf
+*.iso
 shell.nix
