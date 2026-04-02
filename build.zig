@@ -5,7 +5,11 @@ const boot = @import("./build_script/build_boot.zig");
 
 pub fn build(b: *std.Build) void {
     const build_dir_step = utils.create_builddir(b);
-    const boot_step  = boot.build_boot(b, .{ .asm_files = &.{"./kernel/boot.asm", "./kernel/main.asm"}, .c_files = &.{"./kernel/kernel.c"}, .linker_script = "./linker.ld" });
+    const boot_step  = boot.build_boot(b, .{ 
+        .asm_files = &.{"./kernel/boot/multiboot2.asm", "./kernel/boot/main.asm", "./kernel/boot/log.asm"}, 
+        .c_files = &.{"./kernel/boot/kernel.c"}, 
+        .linker_script = "./linker.ld" }
+    );
 
     if (build_dir_step) |step| {
         boot_step.dependOn(step);
@@ -22,6 +26,12 @@ pub fn build(b: *std.Build) void {
     const qemu_step = b.addSystemCommand(&.{"qemu-system-x86_64", "-cdrom", "alexos.iso"});
     qemu_step.step.dependOn(b.getInstallStep());
 
+    const gdb_step = b.addSystemCommand(&.{"qemu-system-i386", "-cdrom", "alexos.iso", "-S", "-s"});
+    gdb_step.step.dependOn(b.getInstallStep());
+
     const run_step = b.step("run", "launch qemu");
     run_step.dependOn(&qemu_step.step);
+
+    const debug_gdb_step = b.step("gdb", "launch qemu");
+    debug_gdb_step.dependOn(&gdb_step.step);
 }
