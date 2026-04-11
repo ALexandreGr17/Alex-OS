@@ -16,7 +16,7 @@ log:
 
     mov edi,  DWORD [ebp + 8]
     mov ecx, ebp
-    add ecx, 8
+    add ecx, 12
     mov esi, edi
 
 .L1:
@@ -36,11 +36,11 @@ log:
     cmp byte [esi], 's'
     je .print_string
 
-   ; cmp byte [esi], 'i'
-   ; je .print_int
+   cmp byte [esi], 'i'
+   je .print_int
 
-  ;  cmp byte [esi], 'x'
-  ;  je .print_hex
+   cmp byte [esi], 'x'
+   je .print_hex
 
  ;   cmp byte [esi], 'c'
  ;   je .print_char
@@ -48,10 +48,77 @@ log:
 .print_string:
     push edi
     mov edi, DWORD [ecx]
+    add ecx, 4
     call puts
     pop edi
     inc edi
     jmp .L1
+
+.print_int:
+    push eax
+    push edi
+    push edx
+    push ebx
+
+    mov eax, DWORD [ecx]
+    mov edi, buffer
+    add ecx, 4
+    mov ebx, 10
+.L2:
+    div ebx
+    add dl, '0'
+    mov BYTE [edi], dl
+    inc edi
+    cmp eax, 0
+    jnz .L2
+
+    mov BYTE [edi], 0
+
+    mov edi, buffer
+    call puts
+
+    pop ebx
+    pop edx
+    pop edi
+    pop eax
+    jmp .L1
+
+.print_hex:
+    push eax
+    push edi
+    push edx
+    push ebx
+
+    mov eax, DWORD [ecx]
+    mov edi, buffer
+    add ecx, 4
+    mov ebx, 16
+.L3:
+    div ebx
+    cmp edx, 10
+    jl .not_hex
+    sub edx, 10
+    add edx, 'A'
+    jmp .put_int_in_buffer
+.not_hex:
+    add edx, '0'
+.put_int_in_buffer:
+    mov BYTE [edi], dl
+    inc edi
+    cmp eax, 0
+    jnz .L3
+
+    mov BYTE [edi], 0
+
+    mov edi, buffer
+    call puts
+
+    pop ebx
+    pop edx
+    pop edi
+    pop eax
+    jmp .L1
+
 .done:
     call puts
 
@@ -86,3 +153,7 @@ puts:
     mov esp, ebp
     pop ebp
     ret
+
+section .bss
+buffer:
+    resb 10
