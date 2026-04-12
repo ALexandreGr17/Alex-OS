@@ -1,0 +1,17 @@
+[
+    {
+        "directory": "/home/alexandre/projet/Alex-OS",
+        "command": "gcc -c -Wall -g -O0 -I./kernel -ffreestanding -fno-stack-protector -fno-pic -mno-red-zone -mno-mmx -mno-sse -mno-sse2 -nostdlib ./kernel/main.c -o ./build/c/main.o",
+        "file": "/home/alexandre/projet/Alex-OS/kernel/main.c"
+    },
+    {
+        "directory": "/home/alexandre/projet/Alex-OS",
+        "command": "gcc -c -Wall -g -O0 -I./kernel -ffreestanding -fno-stack-protector -fno-pic -mno-red-zone -mno-mmx -mno-sse -mno-sse2 -nostdlib ./kernel/logs/log.c -o ./build/c/log.o",
+        "file": "/home/alexandre/projet/Alex-OS/kernel/logs/log.c"
+    },
+    {
+        "directory": "/home/alexandre/projet/Alex-OS",
+        "command": "gcc -c -Wall -g -O0 -I./kernel -ffreestanding -fno-stack-protector -fno-pic -mno-red-zone -mno-mmx -mno-sse -mno-sse2 -nostdlib ./kernel/memory/physical/physical_memory_management.c -o ./build/c/physical_memory_management.o",
+        "file": "/home/alexandre/projet/Alex-OS/kernel/memory/physical/physical_memory_management.c"
+    }
+]

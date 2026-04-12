@@ -73,7 +73,7 @@ void parse_mem_region(uint8_t* buffer, size_t buffer_size) {
 }
 
 int main(void) {
-    FILE* file = fopen("./dump.bin", "r");
+    FILE* file = fopen("./dump.hex", "r");
 
     struct multiboot_info info = { 0 };
 

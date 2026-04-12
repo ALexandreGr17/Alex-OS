@@ -4,6 +4,6 @@
 void clrscr();
 void puts(char* s);
 void enable_cursor();
-void logf(char* fmt, ...);
+void logf(const char* fmt, ...);
 
 #endif

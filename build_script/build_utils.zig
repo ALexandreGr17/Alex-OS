@@ -26,15 +26,13 @@ pub fn create_builddir(b: *std.Build) ?*std.Build.Step {
     }
 
     const step1 = b.addSystemCommand(&.{"mkdir", "build"});
-    const step2 = b.addSystemCommand(&.{"mkdir", "build/boot"});
-    const step3 = b.addSystemCommand(&.{"mkdir", "build/boot/asm"});
-    const step4 = b.addSystemCommand(&.{"mkdir", "build/boot/c"});
+    const step2 = b.addSystemCommand(&.{"mkdir", "build/asm"});
+    const step3 = b.addSystemCommand(&.{"mkdir", "build/c"});
 
-    step4.step.dependOn(&step3.step);
     step3.step.dependOn(&step2.step);
     step2.step.dependOn(&step1.step);
 
-    return &step4.step;
+    return &step3.step;
 }
 
 pub fn create_obj_path(b: *std.Build, file: []const u8, ext: []const u8, outpath: []const u8) ![]const u8 {
