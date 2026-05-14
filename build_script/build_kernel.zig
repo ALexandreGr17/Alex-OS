@@ -36,7 +36,7 @@ const CompileCommand = struct {
     file: []const u8,
 };
 
-fn build_c(b: *std.Build, c_files: []const []const u8, compile_db: *std.ArrayList(CompileCommand)) !utils.Step {
+fn build_c(b: *std.Build, c_files: []const []const u8, compile_db: *std.ArrayList(CompileCommand), io: *std.Io) !utils.Step {
     var objs = try std.ArrayList([]const u8).initCapacity(b.allocator, 10);
     defer objs.deinit(b.allocator);
 
@@ -49,12 +49,12 @@ fn build_c(b: *std.Build, c_files: []const []const u8, compile_db: *std.ArrayLis
             "-mno-red-zone", "-mno-mmx", "-mno-sse", "-mno-sse2",
             "-nostdlib", file, "-o", output_file
         };
+        const cwd = try std.process.currentPathAlloc(io.*, b.allocator);
 
-        const cwd = try std.process.getCwdAlloc(b.allocator);
         try compile_db.append(b.allocator, .{
             .directory = cwd,
             .command = try std.mem.join(b.allocator, " ", cmd),
-            .file = try std.fs.realpathAlloc(b.allocator, file),
+            .file = try std.Io.Dir.cwd().realPathFileAlloc(io.*, file, b.allocator),
         });
 
         const boot_step = b.addSystemCommand(cmd);
@@ -96,7 +96,7 @@ fn link(b: *std.Build, c_objs: [][]const u8, asm_objs: [][]const u8, linker_scri
     return &b.addSystemCommand(ld_cmd.items).step;
 }
 
-pub fn build_kernel(b: *std.Build, opt: utils.BuildOpt) *std.Build.Step {
+pub fn build_kernel(b: *std.Build, opt: utils.BuildOpt, io: *std.Io) *std.Build.Step {
     const asm_step = build_asm(b, opt.asm_files) catch |err| {
         return &b.addFail(b.fmt("Error while building asm files: {s}", .{@errorName(err)})).step;
     };
@@ -106,7 +106,7 @@ pub fn build_kernel(b: *std.Build, opt: utils.BuildOpt) *std.Build.Step {
         return &b.addFail(b.fmt("Error initialising compile_db: {s}", .{@errorName(err)})).step;
     };
     defer compile_db.deinit(b.allocator);
-    const c_step = build_c(b, opt.c_files, &compile_db) catch |err| {
+    const c_step = build_c(b, opt.c_files, &compile_db, io) catch |err| {
         return &b.addFail(b.fmt("Error while building c files: {s}", .{@errorName(err)})).step;
     };
     defer b.allocator.free(c_step.obj_files);
@@ -118,15 +118,16 @@ pub fn build_kernel(b: *std.Build, opt: utils.BuildOpt) *std.Build.Step {
     ld_step.dependOn(c_step.step);
     ld_step.dependOn(asm_step.step);
 
-    var json_file = std.fs.cwd().createFile("./compile_commands.json", .{ .truncate = true }) catch |err| {
+
+    var json_file = std.Io.Dir.cwd().createFile(io.*, "./compile_commands.json", .{ .truncate = true }) catch |err| {
         return &b.addFail(b.fmt("Error while creating compile_commands.json: {s}", .{@errorName(err)})).step;
     };
-    defer json_file.close();
+    defer json_file.close(io.*);
 
     const buffer = b.allocator.alloc(u8, 100) catch |err| {
         return &b.addFail(b.fmt("Error while allocating buffer: {s}", .{@errorName(err)})).step;
     };
-    var writer = json_file.writer(buffer);
+    var writer = json_file.writer(io.*, buffer);
     std.json.fmt(compile_db.items, .{ .whitespace = .indent_4 }).format(&writer.interface) catch |err| {
         return &b.addFail(b.fmt("Error while formating json: {s}", .{@errorName(err)})).step;
     };

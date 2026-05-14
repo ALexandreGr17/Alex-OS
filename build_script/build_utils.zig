@@ -16,12 +16,12 @@ pub const BuildError = error{
     NoASMFiles,
 };
 
-fn dirExists(path: []const u8) bool {
-    return std.fs.cwd().openDir(path, .{}) catch null != null;
+fn dirExists(path: []const u8, io: *std.Io) bool {
+    return std.Io.Dir.cwd().openDir(io.*, path, .{}) catch null != null;
 }
 
-pub fn create_builddir(b: *std.Build) ?*std.Build.Step {
-    if (dirExists("./build")) {
+pub fn create_builddir(b: *std.Build, io: *std.Io) ?*std.Build.Step {
+    if (dirExists("./build", io)) {
         return null;
     }
 

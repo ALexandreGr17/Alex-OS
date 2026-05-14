@@ -4,7 +4,11 @@ const kernel = @import("./build_script/build_kernel.zig");
 
 
 pub fn build(b: *std.Build) void {
-    const build_dir_step = utils.create_builddir(b);
+    var threaded: std.Io.Threaded = .init(b.allocator, .{});
+    defer threaded.deinit();
+    var io = threaded.io();
+
+    const build_dir_step = utils.create_builddir(b, &io);
     const boot_step  = kernel.build_kernel(b, .{ 
         .asm_files = &.{
             "./kernel/boot/multiboot2.asm", 
@@ -17,7 +21,8 @@ pub fn build(b: *std.Build) void {
             "./kernel/logs/log.c",
             "./kernel/memory/physical/physical_memory_management.c"
         }, 
-        .linker_script = "./linker.ld" }
+        .linker_script = "./linker.ld" },
+        &io
     );
 
     if (build_dir_step) |step| {
@@ -25,7 +30,7 @@ pub fn build(b: *std.Build) void {
     }
 
     const install_step = b.addSystemCommand(&.{"cp", "./build/kernel.o", "iso/boot/kernel.bin"});
-    const iso_step = b.addSystemCommand(&.{"grub-mkrescue", "/usr/lib/grub/i386-pc/", "-o", "alexos.iso", "iso"});
+    const iso_step = b.addSystemCommand(&.{"grub-mkrescue",  "-o", "alexos.iso", "iso"});
 
     iso_step.step.dependOn(&install_step.step);
     install_step.step.dependOn(boot_step);
