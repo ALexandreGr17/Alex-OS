@@ -15,11 +15,15 @@ pub fn build(b: *std.Build) void {
             "./kernel/boot/main.asm", 
             "./kernel/boot/log.asm", 
             "./kernel/boot/main64.asm", 
-            "./kernel/arch/io.asm"}, 
+            "./kernel/arch/io.asm",
+            "./kernel/memory/virtual/vmm_asm.asm",
+        }, 
         .c_files = &.{
             "./kernel/main.c", 
             "./kernel/logs/log.c",
-            "./kernel/memory/physical/physical_memory_management.c"
+            "./kernel/memory/physical/physical_memory_management.c",
+            "./kernel/memory/virtual/virtual_memory_manager.c",
+            "./kernel/memory/mem_utils.c",
         }, 
         .linker_script = "./linker.ld" },
         &io

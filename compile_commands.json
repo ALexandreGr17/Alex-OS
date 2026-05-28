@@ -13,5 +13,15 @@
         "directory": "/home/alexandre/projet/Alex-OS",
         "command": "gcc -c -Wall -g -O0 -I./kernel -ffreestanding -fno-stack-protector -fno-pic -mno-red-zone -mno-mmx -mno-sse -mno-sse2 -nostdlib ./kernel/memory/physical/physical_memory_management.c -o ./build/c/physical_memory_management.o",
         "file": "/home/alexandre/projet/Alex-OS/kernel/memory/physical/physical_memory_management.c"
+    },
+    {
+        "directory": "/home/alexandre/projet/Alex-OS",
+        "command": "gcc -c -Wall -g -O0 -I./kernel -ffreestanding -fno-stack-protector -fno-pic -mno-red-zone -mno-mmx -mno-sse -mno-sse2 -nostdlib ./kernel/memory/virtual/virtual_memory_manager.c -o ./build/c/virtual_memory_manager.o",
+        "file": "/home/alexandre/projet/Alex-OS/kernel/memory/virtual/virtual_memory_manager.c"
+    },
+    {
+        "directory": "/home/alexandre/projet/Alex-OS",
+        "command": "gcc -c -Wall -g -O0 -I./kernel -ffreestanding -fno-stack-protector -fno-pic -mno-red-zone -mno-mmx -mno-sse -mno-sse2 -nostdlib ./kernel/memory/mem_utils.c -o ./build/c/mem_utils.o",
+        "file": "/home/alexandre/projet/Alex-OS/kernel/memory/mem_utils.c"
     }
 ]

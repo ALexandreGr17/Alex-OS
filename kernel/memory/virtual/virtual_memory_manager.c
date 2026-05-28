@@ -126,7 +126,7 @@ void vmm_unmap_page(void* virt_addr, void* phys_addr, uint64_t nb_page) {
 
 void init_vmm_higher(void (*entry)()) {
     PML4[0] = 0;
-
+    logf("%x\n", entry);
     entry();
 }
 
@@ -156,5 +156,5 @@ void init_vmm_lower(void (*entry)()) {
     logf("All good\n");
 
     void (*kernel_high)(void (*entry)()) = (void*)higher_half + ((uint64_t)init_vmm_higher - base_kernel);
-    kernel_high(entry);
+    kernel_high((void*)higher_half + ((uint64_t)entry - base_kernel));
 }
