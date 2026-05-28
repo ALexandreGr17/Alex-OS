@@ -1,6 +1,7 @@
 #include <stdint.h>
 
 #include <logs/log.h>
+#include <memory/mem_utils.h>
 
 extern char kernel_start;
 extern char kernel_end;
@@ -154,12 +155,6 @@ multiboot_tag_t* find_memory_map_in_multiboot(void* multiboot_struct) {
     return 0;
 }
 
-void memset(uint8_t *s, uint8_t c, uint64_t n) {
-    for (uint64_t i = 0; i < n; i++) {
-        s[i] = c;
-    }
-}
-
 void init_pmm(void* multiboot_structure) {
     logf("multiboot_structure: 0x%x\n", multiboot_structure);
     logf("multiboot_structure_end: 0x%x\n", multiboot_structure + *(uint32_t*)multiboot_structure);
@@ -183,7 +178,9 @@ void init_pmm(void* multiboot_structure) {
     pmm_alloc_region((uint64_t)BLOCK_BUFFER, BLOCK_BUFFER_SIZE);
 }
 
-void* pmm_find_free_block() {
+void* pmm_find_free_block(uint64_t nb_blocks) {
+    uint64_t count = nb_blocks;
+    void* base = 0;
     for (uint64_t i = 0; i < BLOCK_BUFFER_SIZE; i++) {
         if (BLOCK_BUFFER[i] == (uint64_t)-1) {
             continue;
@@ -192,8 +189,19 @@ void* pmm_find_free_block() {
         uint64_t shift = 0;
         while (shift < 64) {
             if (!(BLOCK_BUFFER[i] & (1 << shift))) {
-                return (void*)GET_ADDR(i, shift);
+                if (count == nb_blocks) {
+                    base = (void*)GET_ADDR(i, shift);
+                }
+                count--;
+                if (count == 0) {
+                    return base;
+                }
             }
+            else {
+                count = nb_blocks;
+                base = 0;
+            }
+            shift++;
         }
     }
 
