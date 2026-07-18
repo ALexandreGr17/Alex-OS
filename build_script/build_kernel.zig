@@ -47,7 +47,7 @@ fn build_c(b: *std.Build, c_files: []const []const u8, compile_db: *std.ArrayLis
             "gcc", "-c", "-Wall", "-g", "-O0", "-I./kernel",
             "-ffreestanding", "-fno-stack-protector", "-fno-pic",
             "-mno-red-zone", "-mno-mmx", "-mno-sse", "-mno-sse2",
-            "-nostdlib", file, "-o", output_file
+            "-nostdlib", "-mcmodel=kernel", file, "-o", output_file
         };
         const cwd = try std.process.currentPathAlloc(io.*, b.allocator);
 

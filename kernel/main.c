@@ -11,8 +11,15 @@ void kernel_loop() {
     uint8_t* buf = (uint8_t*)0x40;
     logf("%x\n", vmm_map_page);
     logf("%x\n", logf);
+    void *phys = pmm_find_free_block(1);
+
+    // for(;;);
+    vmm_map_page((void*)0x4000000000, phys, 1);
+
     for(;;);
-    vmm_map_page(buf, pmm_find_free_block(1), 1);
+    uint8_t *ptr = (uint8_t*)0x4000000000;
+    *ptr = 42;
+    for(;;);
     // buf[0] = 'a';
     // buf[1] = 0;
     // logf("%s\n", buf);
