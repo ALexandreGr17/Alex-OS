@@ -5,25 +5,24 @@
 
 #include <logs/log.h>
 
-static uint64_t PML4[512] __attribute__((aligned(4096)));
-static uint64_t PDPT[512] __attribute__((aligned(4096)));
-static uint64_t PD[512] __attribute__((aligned(4096)));
+static uint64_t* PML4;
 
 extern void* get_cr3();
 extern void set_cr3(void*);
 
-void* find_free_page() {
+void* vmm_find_free_page() {
     for (uint16_t i = 0; i < 512; i++) {
  
-        if (!(PML4[i] & PAGE_ATTRIBUTE_PRESENT)) continue;
+        if (!(PML4[i] & PAGE_ATTRIBUTE_PRESENT)) return (void*)GET_VIRT(i, 0, 0, 0, 0);
         uint64_t *pdpt_table = PHYS_TO_VIRT((void *)(PML4[i] & PAGE_ADDRESS_MASK));
 
         for (uint16_t j = 0; j < 512; j++) {
-            if (!((uint64_t)pdpt_table[j] & PAGE_ATTRIBUTE_PRESENT)) continue;
+            if (!((uint64_t)pdpt_table[j] & PAGE_ATTRIBUTE_PRESENT)) return (void*)GET_VIRT(i, j, 0, 0, 0);
             uint64_t *pd_table = PHYS_TO_VIRT((void *)(pdpt_table[j] & PAGE_ADDRESS_MASK));
 
             for (uint16_t k = 0; k < 512; k++) { 
-                if (!((uint64_t)pd_table[k] & PAGE_ATTRIBUTE_PRESENT)) continue;
+                if (!((uint64_t)pd_table[k] & PAGE_ATTRIBUTE_PRESENT)) return (void*)GET_VIRT(i, j, k, 0, 0);
+                if (((uint64_t)pd_table[k] & PAGE_ATTRIBUTE_SIZE)) continue;
                 uint64_t *pt_table = PHYS_TO_VIRT((void *)(pd_table[k] & PAGE_ADDRESS_MASK));
                 
                 for (uint16_t l = 0; l < 512; l++) { 
@@ -46,7 +45,6 @@ void vmm_map_page(void* virt_addr, void* phys_addr, uint64_t nb_page) {
             pmm_alloc_region((uint64_t)block_phys, 4096);
         }
         uint64_t *pdpt_table = PHYS_TO_VIRT(PML4[GET_PML4(virt_addr)] & PAGE_ADDRESS_MASK);
-        logf("pdpt_table(%x): %x\n", virt_addr, pdpt_table);
 
         uint64_t entry = pdpt_table[GET_PDPT(virt_addr)];
 
@@ -58,7 +56,6 @@ void vmm_map_page(void* virt_addr, void* phys_addr, uint64_t nb_page) {
             pmm_alloc_region((uint64_t)block_phys, 4096);
         }
         uint64_t *pd_table = PHYS_TO_VIRT(pdpt_table[GET_PDPT(virt_addr)] & PAGE_ADDRESS_MASK);
-        logf("pd_table(%x): %x\n", virt_addr, pd_table);
 
         entry = pd_table[GET_PD(virt_addr)];
 
@@ -94,4 +91,8 @@ void vmm_unmap_page(void* virt_addr, void* phys_addr, uint64_t nb_page) {
         pt_table[GET_PT(virt_addr)] = 0;
         nb_page--;
     }
+}
+
+void init_vmm_higher() {
+    PML4 = PHYS_TO_VIRT(get_cr3());
 }
