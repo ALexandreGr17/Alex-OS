@@ -8,7 +8,6 @@ pub fn build(b: *std.Build) void {
     defer threaded.deinit();
     var io = threaded.io();
 
-    const build_dir_step = utils.create_builddir(b, &io);
     const boot_step  = kernel.build_kernel(b, .{ 
         .asm_files = &.{
             "./kernel/boot/multiboot2.asm", 
@@ -17,6 +16,8 @@ pub fn build(b: *std.Build) void {
             "./kernel/boot/main64.asm", 
             "./kernel/arch/io.asm",
             "./kernel/memory/virtual/vmm_asm.asm",
+            "./kernel/boot/memory/vmm_asm.asm",
+            "./kernel/boot/arch/io.asm",
         }, 
         .c_files = &.{
             "./kernel/main.c", 
@@ -24,14 +25,15 @@ pub fn build(b: *std.Build) void {
             "./kernel/memory/physical/physical_memory_management.c",
             "./kernel/memory/virtual/virtual_memory_manager.c",
             "./kernel/memory/mem_utils.c",
+            "./kernel/boot/kernel.c",
+            "./kernel/boot/log/logf.c",
+            "./kernel/boot/memory/physical.c",
+            "./kernel/boot/memory/virtual.c",
         }, 
         .linker_script = "./linker.ld" },
         &io
     );
 
-    if (build_dir_step) |step| {
-        boot_step.dependOn(step);
-    }
 
     const install_step = b.addSystemCommand(&.{"cp", "./build/kernel.o", "iso/boot/kernel.bin"});
     const iso_step = b.addSystemCommand(&.{"grub-mkrescue",  "-o", "alexos.iso", "iso"});

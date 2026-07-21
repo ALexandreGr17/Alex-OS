@@ -1,6 +1,6 @@
 global log
 
-section .text
+section .bootstrap
 bits 32
 
 ;
@@ -154,6 +154,6 @@ puts:
     pop ebp
     ret
 
-section .bss
+section .bootstrap_bss nobits
 buffer:
     resb 10

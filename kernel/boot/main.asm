@@ -4,7 +4,7 @@ global multiboot_info
 extern long_mode_start
 extern log
 
-section .text
+section .bootstrap
 bits 32
 _start:
 
@@ -116,13 +116,13 @@ enable_paging:
 
     ret
 
-section .data
+section .bootstrap_data
 hello: db "Hello", 0
 multi_boot_error: db "No multiboot", 0
 cpuid_error: db "No cpuid", 0
 long_mode_error: db "No long mode", 0
 
-section .bss
+section .bootstrap_bss nobits
 
 
 
@@ -147,7 +147,7 @@ multiboot_info:
 
 
 
-section .rodata
+section .bootstrap_rodata
 gdt64:
     dq 0
 .code_segment: equ $ - gdt64

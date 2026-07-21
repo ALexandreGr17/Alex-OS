@@ -1,13 +1,14 @@
 const std = @import("std");
 const utils = @import("./build_utils.zig");
 
-fn build_asm(b: *std.Build, asm_files: []const []const u8) !utils.Step {
+fn build_asm(b: *std.Build, asm_files: []const []const u8, io: *std.Io) !utils.Step {
     var objs = try std.ArrayList([]const u8).initCapacity(b.allocator, 10);
     defer objs.deinit(b.allocator);
 
     var last_step: ?*std.Build.Step = null;
     for (asm_files) |file| {
         const output_file = try utils.create_obj_path(b, file, "asm", "./build/asm");
+        try utils.create_output_dir(io, output_file);
         const cmd = &.{
             "nasm", "-f", "elf64", "-o", output_file, file
         };
@@ -43,11 +44,13 @@ fn build_c(b: *std.Build, c_files: []const []const u8, compile_db: *std.ArrayLis
     var last_step: ?*std.Build.Step = null;
     for (c_files) |file| {
         const output_file = try utils.create_obj_path(b, file, "c", "./build/c");
+        try utils.create_output_dir(io, output_file);
         const cmd = &.{
             "gcc", "-c", "-Wall", "-g", "-O0", "-I./kernel",
             "-ffreestanding", "-fno-stack-protector", "-fno-pic",
             "-mno-red-zone", "-mno-mmx", "-mno-sse", "-mno-sse2",
-            "-nostdlib", "-mcmodel=kernel", file, "-o", output_file
+            "-nostdlib", "-mcmodel=kernel", "-fno-asynchronous-unwind-tables",
+            "-fno-unwind-tables", "-fno-exceptions", file, "-o", output_file
         };
         const cwd = try std.process.currentPathAlloc(io.*, b.allocator);
 
@@ -77,7 +80,6 @@ fn build_c(b: *std.Build, c_files: []const []const u8, compile_db: *std.ArrayLis
 fn link(b: *std.Build, c_objs: [][]const u8, asm_objs: [][]const u8, linker_script: []const u8) !*std.Build.Step {
     var ld_cmd = try std.ArrayList([]const u8).initCapacity(b.allocator, 10);
     try ld_cmd.append(b.allocator, "ld");
-    try ld_cmd.append(b.allocator, "-n");
     try ld_cmd.append(b.allocator, "-nostdlib");
     try ld_cmd.append(b.allocator, "-T");
     try ld_cmd.append(b.allocator, linker_script);
@@ -97,7 +99,7 @@ fn link(b: *std.Build, c_objs: [][]const u8, asm_objs: [][]const u8, linker_scri
 }
 
 pub fn build_kernel(b: *std.Build, opt: utils.BuildOpt, io: *std.Io) *std.Build.Step {
-    const asm_step = build_asm(b, opt.asm_files) catch |err| {
+    const asm_step = build_asm(b, opt.asm_files, io) catch |err| {
         return &b.addFail(b.fmt("Error while building asm files: {s}", .{@errorName(err)})).step;
     };
     defer b.allocator.free(asm_step.obj_files);

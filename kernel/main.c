@@ -1,38 +1,22 @@
 #include "logs/log.h"
 #include <stdint.h>
 #include <memory/memory.h>
-#include <memory/physical/physical_memory_manager.h>
+#include <memory/physical/pmm.h>
+#include <memory/virtual/vmm_types.h>
 
-void kernel_loop() {
+#include <boot/bootstrap.h>
+
+
+
+void kernel_main(bootstrap_info_t* bs_info) {
     clrscr();
-    puts("test\n\t");
+    // puts("test\n\t");
     logf("Hello %s%c %i %x\n", "world", '!', 10, 10);
-    
-    uint8_t* buf = (uint8_t*)0x40;
-    logf("%x\n", vmm_map_page);
-    logf("%x\n", logf);
-    void *phys = pmm_find_free_block(1);
 
-    // for(;;);
-    vmm_map_page((void*)0x4000000000, phys, 1);
+    logf("multiboot_struct: %x\n", bs_info->multiboot_struct);
 
-    for(;;);
-    uint8_t *ptr = (uint8_t*)0x4000000000;
-    *ptr = 42;
-    for(;;);
-    // buf[0] = 'a';
-    // buf[1] = 0;
-    // logf("%s\n", buf);
-}
-
-
-void kernel_main(void* multiboot_struct) {
-    enable_cursor();
-    clrscr();
-    puts("test\n\t");
-    logf("Hello %s%c %i %x\n", "world", '!', 10, 10);
-    init_pmm(multiboot_struct);
-    init_vmm_lower(kernel_loop);
-
+    bootstrap_info_t* info = PHYS_TO_VIRT(bs_info);
+    logf("pmm_map[0]: %x\n", ((uint64_t*)PHYS_TO_VIRT(info->pmm_map))[0]);
+    init_pmm_higher(PHYS_TO_VIRT(info->pmm_map), info->pmm_map_size);
     while(1);
 }

@@ -41,10 +41,13 @@ pub fn create_obj_path(b: *std.Build, file: []const u8, ext: []const u8, outpath
     while (i < file.len) {
         if (file[i] == '/') {
             last_slash = i;
+            if (std.mem.eql(u8, "./kernel", file[0..i])) {
+                break;
+            }
         }
         i+=1;
     }
-    var size = i - last_slash;
+    var size = file[last_slash..].len;
     size -= (ext.len - 1);
     const file_name =  try b.allocator.alloc(u8, size);
     defer b.allocator.free(file_name);
@@ -57,3 +60,15 @@ pub fn create_obj_path(b: *std.Build, file: []const u8, ext: []const u8, outpath
     return b.pathJoin(&.{outpath, file_name});
 }
 
+pub fn create_output_dir(io: *std.Io, fullpath: []const u8 ) !void {
+    var i: usize = 0;
+    var last_slash: usize = 0;
+    while (i < fullpath.len) {
+        if (fullpath[i] == '/') {
+            last_slash = i;
+        }
+        i+=1;
+    }
+
+    try std.Io.Dir.cwd().createDirPath(io.*, fullpath[0..last_slash]);
+}
