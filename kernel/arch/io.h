@@ -10,4 +10,6 @@ void io_out8(uint16_t port, uint8_t data);
 void io_out16(uint16_t port, uint16_t data);
 void io_out32(uint16_t port, uint32_t data);
 
+void io_wait();
+
 #endif

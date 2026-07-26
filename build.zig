@@ -18,6 +18,7 @@ pub fn build(b: *std.Build) void {
             "./kernel/memory/virtual/vmm_asm.asm",
             "./kernel/boot/memory/vmm_asm.asm",
             "./kernel/boot/arch/io.asm",
+            "./kernel/arch/interrupts/idt.asm",
         }, 
         .c_files = &.{
             "./kernel/main.c", 
@@ -29,6 +30,9 @@ pub fn build(b: *std.Build) void {
             "./kernel/boot/log/logf.c",
             "./kernel/boot/memory/physical.c",
             "./kernel/boot/memory/virtual.c",
+            "./kernel/arch/interrupts/idt.c",
+            "./kernel/arch/interrupts/pic.c",
+            "./kernel/pit/pit.c",
         }, 
         .linker_script = "./linker.ld" },
         &io

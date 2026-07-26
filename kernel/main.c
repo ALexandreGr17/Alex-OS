@@ -1,3 +1,4 @@
+#include "arch/interrupts/pic.h"
 #include "logs/log.h"
 #include <stdint.h>
 #include <memory/physical/pmm.h>
@@ -5,7 +6,12 @@
 
 #include <boot/bootstrap.h>
 
+#include <arch/interrupts/idt.h>
+#include <pit/pit.h>
 
+void timer_handler(interrupt_frame_t* frame) {
+    pic_send_eoi(0);
+}
 
 void kernel_main(bootstrap_info_t* bs_info) {
     clrscr();
@@ -16,8 +22,12 @@ void kernel_main(bootstrap_info_t* bs_info) {
 
     bootstrap_info_t* info = PHYS_TO_VIRT(bs_info);
     logf("pmm_map[0]: %x\n", ((uint64_t*)PHYS_TO_VIRT(info->pmm_map))[0]);
+    idt_init();
+
+    pit_init();
     init_pmm_higher(PHYS_TO_VIRT(info->pmm_map), info->pmm_map_size);
     init_vmm_higher();
+
 
 
     uint8_t* block = pmm_find_free_block(1);
@@ -30,6 +40,9 @@ void kernel_main(bootstrap_info_t* bs_info) {
     page[0] = 1;
 
     logf("%x: %d\n", page, page[0]);
+
+    sleep_ms(1000);
+    logf("after 1 s\n");
 
     while(1);
 }
