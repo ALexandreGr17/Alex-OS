@@ -1,0 +1,72 @@
+[
+    {
+        "directory": "/home/alexandre/projet/Alex-OS",
+        "command": "gcc -c -Wall -g -O0 -I./kernel -ffreestanding -fno-stack-protector -fno-pic -mno-red-zone -mno-mmx -mno-sse -mno-sse2 -nostdlib -mcmodel=kernel -fno-asynchronous-unwind-tables -fno-unwind-tables -fno-exceptions ./kernel/main.c -o ./build/c/main.o",
+        "file": "/home/alexandre/projet/Alex-OS/kernel/main.c"
+    },
+    {
+        "directory": "/home/alexandre/projet/Alex-OS",
+        "command": "gcc -c -Wall -g -O0 -I./kernel -ffreestanding -fno-stack-protector -fno-pic -mno-red-zone -mno-mmx -mno-sse -mno-sse2 -nostdlib -mcmodel=kernel -fno-asynchronous-unwind-tables -fno-unwind-tables -fno-exceptions ./kernel/logs/log.c -o ./build/c/logs/log.o",
+        "file": "/home/alexandre/projet/Alex-OS/kernel/logs/log.c"
+    },
+    {
+        "directory": "/home/alexandre/projet/Alex-OS",
+        "command": "gcc -c -Wall -g -O0 -I./kernel -ffreestanding -fno-stack-protector -fno-pic -mno-red-zone -mno-mmx -mno-sse -mno-sse2 -nostdlib -mcmodel=kernel -fno-asynchronous-unwind-tables -fno-unwind-tables -fno-exceptions ./kernel/memory/physical/physical_memory_management.c -o ./build/c/memory/physical/physical_memory_management.o",
+        "file": "/home/alexandre/projet/Alex-OS/kernel/memory/physical/physical_memory_management.c"
+    },
+    {
+        "directory": "/home/alexandre/projet/Alex-OS",
+        "command": "gcc -c -Wall -g -O0 -I./kernel -ffreestanding -fno-stack-protector -fno-pic -mno-red-zone -mno-mmx -mno-sse -mno-sse2 -nostdlib -mcmodel=kernel -fno-asynchronous-unwind-tables -fno-unwind-tables -fno-exceptions ./kernel/memory/virtual/virtual_memory_manager.c -o ./build/c/memory/virtual/virtual_memory_manager.o",
+        "file": "/home/alexandre/projet/Alex-OS/kernel/memory/virtual/virtual_memory_manager.c"
+    },
+    {
+        "directory": "/home/alexandre/projet/Alex-OS",
+        "command": "gcc -c -Wall -g -O0 -I./kernel -ffreestanding -fno-stack-protector -fno-pic -mno-red-zone -mno-mmx -mno-sse -mno-sse2 -nostdlib -mcmodel=kernel -fno-asynchronous-unwind-tables -fno-unwind-tables -fno-exceptions ./kernel/memory/mem_utils.c -o ./build/c/memory/mem_utils.o",
+        "file": "/home/alexandre/projet/Alex-OS/kernel/memory/mem_utils.c"
+    },
+    {
+        "directory": "/home/alexandre/projet/Alex-OS",
+        "command": "gcc -c -Wall -g -O0 -I./kernel -ffreestanding -fno-stack-protector -fno-pic -mno-red-zone -mno-mmx -mno-sse -mno-sse2 -nostdlib -mcmodel=kernel -fno-asynchronous-unwind-tables -fno-unwind-tables -fno-exceptions ./kernel/boot/kernel.c -o ./build/c/boot/kernel.o",
+        "file": "/home/alexandre/projet/Alex-OS/kernel/boot/kernel.c"
+    },
+    {
+        "directory": "/home/alexandre/projet/Alex-OS",
+        "command": "gcc -c -Wall -g -O0 -I./kernel -ffreestanding -fno-stack-protector -fno-pic -mno-red-zone -mno-mmx -mno-sse -mno-sse2 -nostdlib -mcmodel=kernel -fno-asynchronous-unwind-tables -fno-unwind-tables -fno-exceptions ./kernel/boot/log/logf.c -o ./build/c/boot/log/logf.o",
+        "file": "/home/alexandre/projet/Alex-OS/kernel/boot/log/logf.c"
+    },
+    {
+        "directory": "/home/alexandre/projet/Alex-OS",
+        "command": "gcc -c -Wall -g -O0 -I./kernel -ffreestanding -fno-stack-protector -fno-pic -mno-red-zone -mno-mmx -mno-sse -mno-sse2 -nostdlib -mcmodel=kernel -fno-asynchronous-unwind-tables -fno-unwind-tables -fno-exceptions ./kernel/boot/memory/physical.c -o ./build/c/boot/memory/physical.o",
+        "file": "/home/alexandre/projet/Alex-OS/kernel/boot/memory/physical.c"
+    },
+    {
+        "directory": "/home/alexandre/projet/Alex-OS",
+        "command": "gcc -c -Wall -g -O0 -I./kernel -ffreestanding -fno-stack-protector -fno-pic -mno-red-zone -mno-mmx -mno-sse -mno-sse2 -nostdlib -mcmodel=kernel -fno-asynchronous-unwind-tables -fno-unwind-tables -fno-exceptions ./kernel/boot/memory/virtual.c -o ./build/c/boot/memory/virtual.o",
+        "file": "/home/alexandre/projet/Alex-OS/kernel/boot/memory/virtual.c"
+    },
+    {
+        "directory": "/home/alexandre/projet/Alex-OS",
+        "command": "gcc -c -Wall -g -O0 -I./kernel -ffreestanding -fno-stack-protector -fno-pic -mno-red-zone -mno-mmx -mno-sse -mno-sse2 -nostdlib -mcmodel=kernel -fno-asynchronous-unwind-tables -fno-unwind-tables -fno-exceptions ./kernel/arch/interrupts/idt.c -o ./build/c/arch/interrupts/idt.o",
+        "file": "/home/alexandre/projet/Alex-OS/kernel/arch/interrupts/idt.c"
+    },
+    {
+        "directory": "/home/alexandre/projet/Alex-OS",
+        "command": "gcc -c -Wall -g -O0 -I./kernel -ffreestanding -fno-stack-protector -fno-pic -mno-red-zone -mno-mmx -mno-sse -mno-sse2 -nostdlib -mcmodel=kernel -fno-asynchronous-unwind-tables -fno-unwind-tables -fno-exceptions ./kernel/arch/interrupts/pic.c -o ./build/c/arch/interrupts/pic.o",
+        "file": "/home/alexandre/projet/Alex-OS/kernel/arch/interrupts/pic.c"
+    },
+    {
+        "directory": "/home/alexandre/projet/Alex-OS",
+        "command": "gcc -c -Wall -g -O0 -I./kernel -ffreestanding -fno-stack-protector -fno-pic -mno-red-zone -mno-mmx -mno-sse -mno-sse2 -nostdlib -mcmodel=kernel -fno-asynchronous-unwind-tables -fno-unwind-tables -fno-exceptions ./kernel/pit/pit.c -o ./build/c/pit/pit.o",
+        "file": "/home/alexandre/projet/Alex-OS/kernel/pit/pit.c"
+    },
+    {
+        "directory": "/home/alexandre/projet/Alex-OS",
+        "command": "gcc -c -Wall -g -O0 -I./kernel -ffreestanding -fno-stack-protector -fno-pic -mno-red-zone -mno-mmx -mno-sse -mno-sse2 -nostdlib -mcmodel=kernel -fno-asynchronous-unwind-tables -fno-unwind-tables -fno-exceptions ./kernel/arch/pci/pci.c -o ./build/c/arch/pci/pci.o",
+        "file": "/home/alexandre/projet/Alex-OS/kernel/arch/pci/pci.c"
+    },
+    {
+        "directory": "/home/alexandre/projet/Alex-OS",
+        "command": "gcc -c -Wall -g -O0 -I./kernel -ffreestanding -fno-stack-protector -fno-pic -mno-red-zone -mno-mmx -mno-sse -mno-sse2 -nostdlib -mcmodel=kernel -fno-asynchronous-unwind-tables -fno-unwind-tables -fno-exceptions ./kernel/driver/ata.c -o ./build/c/driver/ata.o",
+        "file": "/home/alexandre/projet/Alex-OS/kernel/driver/ata.c"
+    }
+]

@@ -33,6 +33,8 @@ pub fn build(b: *std.Build) void {
             "./kernel/arch/interrupts/idt.c",
             "./kernel/arch/interrupts/pic.c",
             "./kernel/pit/pit.c",
+            "./kernel/arch/pci/pci.c",
+            "./kernel/driver/ata.c"
         }, 
         .linker_script = "./linker.ld" },
         &io
@@ -47,13 +49,13 @@ pub fn build(b: *std.Build) void {
 
     b.getInstallStep().dependOn(&iso_step.step);
 
-    const qemu_step = b.addSystemCommand(&.{"qemu-system-x86_64", "-cdrom", "alexos.iso", "-debugcon", "stdio"});
+    const qemu_step = b.addSystemCommand(&.{"qemu-system-x86_64", "-hda", "alexos.iso", "-debugcon", "stdio"});
     qemu_step.step.dependOn(b.getInstallStep());
 
-    const gdb32_step = b.addSystemCommand(&.{"qemu-system-i386", "-cdrom", "alexos.iso", "-S", "-s"});
+    const gdb32_step = b.addSystemCommand(&.{"qemu-system-i386", "-hda", "alexos.iso", "-S", "-s"});
     gdb32_step.step.dependOn(b.getInstallStep());
 
-    const gdb64_step = b.addSystemCommand(&.{"qemu-system-x86_64", "-cdrom", "alexos.iso", "-S", "-s"});
+    const gdb64_step = b.addSystemCommand(&.{"qemu-system-x86_64", "-hda", "alexos.iso", "-S", "-s"});
     gdb64_step.step.dependOn(b.getInstallStep());
 
     const clean_step = b.addSystemCommand(&.{"rm", "-rf", ".zig-cache/", "build/", "compile_commands.json", "alexos.iso"});
