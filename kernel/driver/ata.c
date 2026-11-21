@@ -28,6 +28,8 @@ enum ATA_REGISTER_OFFSET {
 enum ATA_CMD {
     ATA_READ_SECTOR_28      = 0x20,
     ATA_WRITE_SECTOR_28     = 0x30,
+    ATA_READ_SECTOR_48      = 0x24,
+    ATA_WRITE_SECTOR_48     = 0x34,
     ATA_CACHE_FLUSH         = 0xE7,
     ATA_IDENTIFY            = 0xEC,
 };
@@ -195,6 +197,84 @@ int ata_write_28(uint32_t lba, uint16_t* buffer) {
     if (ata_poll(ATA_STATUS_NO_FLAG)) {
         logf("Error in ata write 28\n");
         return -1;
+    }
+
+    return 0;
+}
+
+int ata_read_48(uint64_t lba, uint16_t* buffer) {
+    if (lba >= (1u << 28)) {
+        return -1;
+    }
+
+    if (ata_poll(ATA_STATUS_NO_FLAG)) {
+        logf("Error in ata read 28\n");
+        return -1;
+    }
+
+    uint32_t low_lba = lba;
+    uint32_t high_lba = lba >> 32;
+
+    io_out8(MASTER_PORT(Drive_Head), 0x40);
+
+    io_out8(MASTER_PORT(SectorCount), 0);
+
+    io_out8(MASTER_PORT(LBA_Low), (uint8_t)high_lba);
+    io_out8(MASTER_PORT(LBA_Mid), (uint8_t)(high_lba >> 8));
+    io_out8(MASTER_PORT(LBA_High), (uint8_t)(high_lba >> 16));
+
+
+    io_out8(MASTER_PORT(SectorCount), 1);
+
+    io_out8(MASTER_PORT(LBA_Low), (uint8_t)low_lba);
+    io_out8(MASTER_PORT(LBA_Mid), (uint8_t)(low_lba >> 8));
+    io_out8(MASTER_PORT(LBA_High), (uint8_t)(low_lba >> 16));
+
+    io_out8(MASTER_PORT(Stat_Cmd), ATA_READ_SECTOR_48);
+
+    ata_poll(ATA_STATUS_DRQ);
+
+    for (int i = 0; i < 256; i++) {
+        buffer[i] = io_in16(MASTER_PORT(Data));
+    }
+
+    return 0;
+}
+
+int ata_write_48(uint64_t lba, uint16_t* buffer) {
+    if (lba >= (1u << 28)) {
+        return -1;
+    }
+
+    if (ata_poll(ATA_STATUS_NO_FLAG)) {
+        logf("Error in ata read 28\n");
+        return -1;
+    }
+
+    uint32_t low_lba = lba;
+    uint32_t high_lba = lba >> 32;
+
+    io_out8(MASTER_PORT(Drive_Head), 0x40);
+
+    io_out8(MASTER_PORT(SectorCount), 0);
+
+    io_out8(MASTER_PORT(LBA_Low), (uint8_t)high_lba);
+    io_out8(MASTER_PORT(LBA_Mid), (uint8_t)(high_lba >> 8));
+    io_out8(MASTER_PORT(LBA_High), (uint8_t)(high_lba >> 16));
+
+
+    io_out8(MASTER_PORT(SectorCount), 1);
+
+    io_out8(MASTER_PORT(LBA_Low), (uint8_t)low_lba);
+    io_out8(MASTER_PORT(LBA_Mid), (uint8_t)(low_lba >> 8));
+    io_out8(MASTER_PORT(LBA_High), (uint8_t)(low_lba >> 16));
+
+    io_out8(MASTER_PORT(Stat_Cmd), ATA_WRITE_SECTOR_48);
+
+    ata_poll(ATA_STATUS_DRQ);
+
+    for (int i = 0; i < 256; i++) {
+        io_out16(MASTER_PORT(Data), buffer[i]);
     }
 
     return 0;

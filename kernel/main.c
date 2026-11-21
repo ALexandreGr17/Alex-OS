@@ -83,8 +83,8 @@ void kernel_main(bootstrap_info_t* bs_info) {
 
 
     buffer[0] = 0xDEAD;
-    ata_write_28(0, buffer);
-    ata_read_28(0, buffer);
+    ata_write_48(0, buffer);
+    ata_read_48(0, buffer);
     logf("After read_write: %x\n", buffer[0]);
     while(1);
 }
